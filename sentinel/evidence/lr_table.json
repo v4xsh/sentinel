@@ -1,0 +1,797 @@
+{
+  "meta": {
+    "positive_class": "txns in confirmed_fraud closed_cases.txn_ids",
+    "negative_class": "all other transactions (Parquet - fraud_txn_labels)",
+    "n_pos": 14055,
+    "n_neg": 576687,
+    "n_cleared_flag": 900,
+    "laplace_alpha": 1.0
+  },
+  "scoring_prior": {
+    "p_fraud": 0.5,
+    "logit": 0.0,
+    "rationale": "Alert-time prior. The README notes 'half the cases are legitimate', so we start each investigation with no prior belief either way and let the evidence LRs move the log-odds. Isotonic calibration then re-shapes the probabilities."
+  },
+  "closed_case_base_rate": {
+    "value_reported_only": 0.023792,
+    "n_fraud_txns": 14055,
+    "n_total_txns": 590742,
+    "note": "Historical fraud fraction across ALL Parquet txns. Not used in scoring \u2014 see scoring_prior above."
+  },
+  "signals": {
+    "is_new_device_for_card": {
+      "note": "as-of: online txn on a device_profile not previously seen on this card (strictly prior txns only; NULL when n_prior_txns<5)",
+      "sql": "t.is_new_device_for_card = TRUE",
+      "scope": "online",
+      "scope_totals": {
+        "n_pos": 7946,
+        "n_neg": 143126,
+        "n_cleared": 763
+      },
+      "a_pos": 2299,
+      "b_neg": 51076,
+      "p_pos": 0.289381,
+      "p_neg": 0.356862,
+      "lr": 0.8109,
+      "log_lr": -0.2096,
+      "c_cleared": 396,
+      "p_cleared": 0.518954,
+      "lr_vs_cleared": 0.5576,
+      "log_lr_vs_cleared": -0.5841
+    },
+    "unseen_productcd": {
+      "note": "as-of: ProductCD not previously seen on this card",
+      "sql": "t.unseen_productcd = TRUE",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 119,
+      "b_neg": 3029,
+      "p_pos": 0.008537,
+      "p_neg": 0.005254,
+      "lr": 1.6248,
+      "log_lr": 0.4854,
+      "c_cleared": 43,
+      "p_cleared": 0.04878,
+      "lr_vs_cleared": 0.175,
+      "log_lr_vs_cleared": -1.743
+    },
+    "unseen_p_emaildomain": {
+      "note": "as-of: P_emaildomain not previously seen on this card (online)",
+      "sql": "t.unseen_p_emaildomain = TRUE",
+      "scope": "online",
+      "scope_totals": {
+        "n_pos": 7946,
+        "n_neg": 143126,
+        "n_cleared": 763
+      },
+      "a_pos": 184,
+      "b_neg": 5497,
+      "p_pos": 0.023276,
+      "p_neg": 0.038413,
+      "lr": 0.6059,
+      "log_lr": -0.501,
+      "c_cleared": 88,
+      "p_cleared": 0.11634,
+      "lr_vs_cleared": 0.2001,
+      "log_lr_vs_cleared": -1.6091
+    },
+    "out_of_home_region_asof": {
+      "note": "as-of: in-person addr1 != home_addr1_asof (mode of prior in-person)",
+      "sql": "t.out_of_home_region_asof = TRUE",
+      "scope": "in_person",
+      "scope_totals": {
+        "n_pos": 6109,
+        "n_neg": 433561,
+        "n_cleared": 137
+      },
+      "a_pos": 3282,
+      "b_neg": 201853,
+      "p_pos": 0.537228,
+      "p_neg": 0.46557,
+      "lr": 1.1539,
+      "log_lr": 0.1432,
+      "c_cleared": 100,
+      "p_cleared": 0.726619,
+      "lr_vs_cleared": 0.7394,
+      "log_lr_vs_cleared": -0.302
+    },
+    "amt_z_asof_gt3": {
+      "note": "as-of: |amt_z_asof| > 3 (rolling 90d median/MAD, strictly prior)",
+      "sql": "t.amt_z_asof IS NOT NULL AND abs(t.amt_z_asof) > 3.0",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 1886,
+      "b_neg": 59023,
+      "p_pos": 0.134239,
+      "p_neg": 0.10235,
+      "lr": 1.3116,
+      "log_lr": 0.2712,
+      "c_cleared": 152,
+      "p_cleared": 0.169623,
+      "lr_vs_cleared": 0.7914,
+      "log_lr_vs_cleared": -0.234
+    },
+    "amt_z_asof_gt5": {
+      "note": "as-of: |amt_z_asof| > 5",
+      "sql": "t.amt_z_asof IS NOT NULL AND abs(t.amt_z_asof) > 5.0",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 946,
+      "b_neg": 32710,
+      "p_pos": 0.067369,
+      "p_neg": 0.056722,
+      "lr": 1.1877,
+      "log_lr": 0.172,
+      "c_cleared": 138,
+      "p_cleared": 0.154102,
+      "lr_vs_cleared": 0.4372,
+      "log_lr_vs_cleared": -0.8274
+    },
+    "proxy_flag": {
+      "note": "id_23 like 'IP_PROXY:%' (online only)",
+      "sql": "t.channel = 'online' AND t.proxy_flag",
+      "scope": "online",
+      "scope_totals": {
+        "n_pos": 7946,
+        "n_neg": 143126,
+        "n_cleared": 763
+      },
+      "a_pos": 316,
+      "b_neg": 4972,
+      "p_pos": 0.039884,
+      "p_neg": 0.034745,
+      "lr": 1.1479,
+      "log_lr": 0.1379,
+      "c_cleared": 61,
+      "p_cleared": 0.081046,
+      "lr_vs_cleared": 0.4921,
+      "log_lr_vs_cleared": -0.709
+    },
+    "id_15_new": {
+      "note": "Vesta's own 'New' device flag (id_15='New'), online only. Kept separate from the computed is_new_device_for_card so both signals can be scored independently.",
+      "sql": "t.channel = 'online' AND t.id_15 = 'New'",
+      "scope": "online",
+      "scope_totals": {
+        "n_pos": 7946,
+        "n_neg": 143126,
+        "n_cleared": 763
+      },
+      "a_pos": 2218,
+      "b_neg": 59536,
+      "p_pos": 0.27919,
+      "p_neg": 0.41597,
+      "lr": 0.6712,
+      "log_lr": -0.3987,
+      "c_cleared": 749,
+      "p_cleared": 0.980392,
+      "lr_vs_cleared": 0.2848,
+      "log_lr_vs_cleared": -1.2561
+    },
+    "online_R_near_100": {
+      "note": "amount in [95,105], **scope = online AND ProductCD=R**",
+      "sql": "t.TransactionAmt BETWEEN 95.0 AND 105.0",
+      "scope": "online_R",
+      "scope_totals": {
+        "n_pos": 1069,
+        "n_neg": 36630,
+        "n_cleared": 365
+      },
+      "a_pos": 143,
+      "b_neg": 11693,
+      "p_pos": 0.134454,
+      "p_neg": 0.319229,
+      "lr": 0.4212,
+      "log_lr": -0.8647,
+      "c_cleared": 113,
+      "p_cleared": 0.310627,
+      "lr_vs_cleared": 0.4328,
+      "log_lr_vs_cleared": -0.8374
+    },
+    "P_or_R_anonymous_com_on_R": {
+      "note": "anonymous.com email, scope=ProductCD=R (artifact check)",
+      "sql": "t.P_emaildomain = 'anonymous.com' OR t.R_emaildomain = 'anonymous.com'",
+      "scope": "product_R",
+      "scope_totals": {
+        "n_pos": 1069,
+        "n_neg": 36630,
+        "n_cleared": 365
+      },
+      "a_pos": 95,
+      "b_neg": 13147,
+      "p_pos": 0.089636,
+      "p_neg": 0.358921,
+      "lr": 0.2497,
+      "log_lr": -1.3873,
+      "c_cleared": 133,
+      "p_cleared": 0.365123,
+      "lr_vs_cleared": 0.2455,
+      "log_lr_vs_cleared": -1.4045
+    },
+    "amt_gt_1000": {
+      "note": "single-txn amount over $1,000",
+      "sql": "t.TransactionAmt > 1000",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 96,
+      "b_neg": 7333,
+      "p_pos": 0.0069,
+      "p_neg": 0.012717,
+      "lr": 0.5426,
+      "log_lr": -0.6114,
+      "c_cleared": 66,
+      "p_cleared": 0.074279,
+      "lr_vs_cleared": 0.0929,
+      "log_lr_vs_cleared": -2.3762
+    },
+    "prior_fraud_on_card_tuple": {
+      "note": "as-of: at least one confirmed_fraud closed case on same card tuple, closed_at<ts",
+      "sql": "t.prior_fraud_on_card_tuple = TRUE",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 10413,
+      "b_neg": 355212,
+      "p_pos": 0.740841,
+      "p_neg": 0.615952,
+      "lr": 1.2028,
+      "log_lr": 0.1846,
+      "c_cleared": 230,
+      "p_cleared": 0.256098,
+      "lr_vs_cleared": 2.8928,
+      "log_lr_vs_cleared": 1.0622
+    },
+    "prior_fraud_on_customer": {
+      "note": "as-of: same customer, any tuple, \u22651 confirmed_fraud CC closed before ts",
+      "sql": "t.prior_fraud_on_customer = TRUE",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 10564,
+      "b_neg": 360338,
+      "p_pos": 0.751583,
+      "p_neg": 0.624841,
+      "lr": 1.2028,
+      "log_lr": 0.1847,
+      "c_cleared": 236,
+      "p_cleared": 0.262749,
+      "lr_vs_cleared": 2.8605,
+      "log_lr_vs_cleared": 1.051
+    },
+    "prior_cleared_travel_on_card": {
+      "note": "as-of: prior cleared 'confirmed travel' CC on this card",
+      "sql": "t.prior_cleared_travel_on_card = TRUE",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 10,
+      "b_neg": 684,
+      "p_pos": 0.000783,
+      "p_neg": 0.001188,
+      "lr": 0.6588,
+      "log_lr": -0.4173,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 0.7058,
+      "log_lr_vs_cleared": -0.3484
+    },
+    "prior_cleared_new_phone_on_card": {
+      "note": "as-of: prior cleared 'new phone' CC on this card",
+      "sql": "t.prior_cleared_new_phone_on_card = TRUE",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 3,
+      "b_neg": 162,
+      "p_pos": 0.000285,
+      "p_neg": 0.000283,
+      "lr": 1.0067,
+      "log_lr": 0.0067,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 0.2567,
+      "log_lr_vs_cleared": -1.36
+    },
+    "n_online_last_48h_2_4": {
+      "note": "as-of: 2\u20134 online txns on this card in prior 48h",
+      "sql": "t.n_online_last_48h_bucket = '2-4'",
+      "scope": "online",
+      "scope_totals": {
+        "n_pos": 7946,
+        "n_neg": 143126,
+        "n_cleared": 763
+      },
+      "a_pos": 1387,
+      "b_neg": 19891,
+      "p_pos": 0.174635,
+      "p_neg": 0.13898,
+      "lr": 1.2565,
+      "log_lr": 0.2284,
+      "c_cleared": 124,
+      "p_cleared": 0.163399,
+      "lr_vs_cleared": 1.0688,
+      "log_lr_vs_cleared": 0.0665
+    },
+    "n_online_last_48h_5plus": {
+      "note": "as-of: 5+ online txns on this card in prior 48h",
+      "sql": "t.n_online_last_48h_bucket = '5+'",
+      "scope": "online",
+      "scope_totals": {
+        "n_pos": 7946,
+        "n_neg": 143126,
+        "n_cleared": 763
+      },
+      "a_pos": 4417,
+      "b_neg": 77470,
+      "p_pos": 0.555863,
+      "p_neg": 0.541271,
+      "lr": 1.027,
+      "log_lr": 0.0266,
+      "c_cleared": 99,
+      "p_cleared": 0.130719,
+      "lr_vs_cleared": 4.2524,
+      "log_lr_vs_cleared": 1.4475
+    },
+    "mixed_channel_last_24h": {
+      "note": "as-of: both online AND in_person txns on this card in prior 24h",
+      "sql": "t.mixed_channel_last_24h = TRUE",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 3753,
+      "b_neg": 162018,
+      "p_pos": 0.267056,
+      "p_neg": 0.280947,
+      "lr": 0.9506,
+      "log_lr": -0.0507,
+      "c_cleared": 129,
+      "p_cleared": 0.144124,
+      "lr_vs_cleared": 1.853,
+      "log_lr_vs_cleared": 0.6168
+    },
+    "risk_score_decile_1": {
+      "note": "risk_score in global decile 1 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 1",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 67,
+      "b_neg": 59008,
+      "p_pos": 0.004837,
+      "p_neg": 0.102324,
+      "lr": 0.0473,
+      "log_lr": -3.0518,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 4.3634,
+      "log_lr_vs_cleared": 1.4732
+    },
+    "risk_score_decile_2": {
+      "note": "risk_score in global decile 2 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 2",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 156,
+      "b_neg": 58919,
+      "p_pos": 0.011169,
+      "p_neg": 0.102169,
+      "lr": 0.1093,
+      "log_lr": -2.2135,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 10.0743,
+      "log_lr_vs_cleared": 2.31
+    },
+    "risk_score_decile_3": {
+      "note": "risk_score in global decile 3 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 3",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 226,
+      "b_neg": 58848,
+      "p_pos": 0.016149,
+      "p_neg": 0.102046,
+      "lr": 0.1582,
+      "log_lr": -1.8436,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 14.566,
+      "log_lr_vs_cleared": 2.6787
+    },
+    "risk_score_decile_4": {
+      "note": "risk_score in global decile 4 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 4",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 347,
+      "b_neg": 58727,
+      "p_pos": 0.024756,
+      "p_neg": 0.101837,
+      "lr": 0.2431,
+      "log_lr": -1.4143,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 22.3302,
+      "log_lr_vs_cleared": 3.1059
+    },
+    "risk_score_decile_5": {
+      "note": "risk_score in global decile 5 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 5",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 354,
+      "b_neg": 58720,
+      "p_pos": 0.025254,
+      "p_neg": 0.101824,
+      "lr": 0.248,
+      "log_lr": -1.3943,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 22.7794,
+      "log_lr_vs_cleared": 3.1259
+    },
+    "risk_score_decile_6": {
+      "note": "risk_score in global decile 6 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 6",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 617,
+      "b_neg": 58457,
+      "p_pos": 0.043964,
+      "p_neg": 0.101368,
+      "lr": 0.4337,
+      "log_lr": -0.8354,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 39.6554,
+      "log_lr_vs_cleared": 3.6802
+    },
+    "risk_score_decile_7": {
+      "note": "risk_score in global decile 7 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 7",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 794,
+      "b_neg": 58280,
+      "p_pos": 0.056555,
+      "p_neg": 0.101061,
+      "lr": 0.5596,
+      "log_lr": -0.5805,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 51.013,
+      "log_lr_vs_cleared": 3.9321
+    },
+    "risk_score_decile_8": {
+      "note": "risk_score in global decile 8 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 8",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 1168,
+      "b_neg": 57906,
+      "p_pos": 0.083161,
+      "p_neg": 0.100413,
+      "lr": 0.8282,
+      "log_lr": -0.1885,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 75.0116,
+      "log_lr_vs_cleared": 4.3176
+    },
+    "risk_score_decile_9": {
+      "note": "risk_score in global decile 9 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 9",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 2207,
+      "b_neg": 56867,
+      "p_pos": 0.157075,
+      "p_neg": 0.098611,
+      "lr": 1.5929,
+      "log_lr": 0.4655,
+      "c_cleared": 0,
+      "p_cleared": 0.001109,
+      "lr_vs_cleared": 141.6814,
+      "log_lr_vs_cleared": 4.9536
+    },
+    "risk_score_decile_10": {
+      "note": "risk_score in global decile 10 (1=lowest, 10=highest)",
+      "sql": "t.risk_score_decile = 10",
+      "scope": "all",
+      "scope_totals": {
+        "n_pos": 14055,
+        "n_neg": 576687,
+        "n_cleared": 900
+      },
+      "a_pos": 8119,
+      "b_neg": 50955,
+      "p_pos": 0.577648,
+      "p_neg": 0.08836,
+      "lr": 6.5375,
+      "log_lr": 1.8776,
+      "c_cleared": 900,
+      "p_cleared": 0.998891,
+      "lr_vs_cleared": 0.5783,
+      "log_lr_vs_cleared": -0.5477
+    }
+  },
+  "risk_decile_alert_conditional": {
+    "1": {
+      "lr": 58.0,
+      "log_lr": 4.0604,
+      "n_fraud": 57,
+      "n_cleared": 0
+    },
+    "2": {
+      "lr": 152.0,
+      "log_lr": 5.0239,
+      "n_fraud": 151,
+      "n_cleared": 0
+    },
+    "3": {
+      "lr": 242.0,
+      "log_lr": 5.4889,
+      "n_fraud": 241,
+      "n_cleared": 0
+    },
+    "4": {
+      "lr": 306.0,
+      "log_lr": 5.7236,
+      "n_fraud": 305,
+      "n_cleared": 0
+    },
+    "5": {
+      "lr": 397.0,
+      "log_lr": 5.9839,
+      "n_fraud": 396,
+      "n_cleared": 0
+    },
+    "6": {
+      "lr": 583.0,
+      "log_lr": 6.3682,
+      "n_fraud": 582,
+      "n_cleared": 0
+    },
+    "7": {
+      "lr": 798.0,
+      "log_lr": 6.6821,
+      "n_fraud": 797,
+      "n_cleared": 0
+    },
+    "8": {
+      "lr": 1181.0,
+      "log_lr": 7.0741,
+      "n_fraud": 1180,
+      "n_cleared": 0
+    },
+    "9": {
+      "lr": 2225.0,
+      "log_lr": 7.7075,
+      "n_fraud": 2224,
+      "n_cleared": 0
+    },
+    "10": {
+      "lr": 9.0155,
+      "log_lr": 2.1989,
+      "n_fraud": 8122,
+      "n_cleared": 900
+    }
+  },
+  "ring_device_empirical": {
+    "lr": 1.5866,
+    "log_lr": 0.4616,
+    "note": "shares a 3-20-card device with \u22652 other cards (online), fraud vs neg population"
+  },
+  "device_tiers": {
+    "T1": {
+      "lr": 3.294,
+      "log_lr": 1.1921,
+      "a_pos": 1361,
+      "n_pos": 3949,
+      "b_neg": 6477,
+      "n_neg": 61898
+    },
+    "T2": {
+      "lr": 2.7538,
+      "log_lr": 1.013,
+      "a_pos": 73,
+      "n_pos": 3949,
+      "b_neg": 420,
+      "n_neg": 61898
+    },
+    "T3": {
+      "lr": 2.6547,
+      "log_lr": 0.9763,
+      "a_pos": 60,
+      "n_pos": 3949,
+      "b_neg": 359,
+      "n_neg": 61898
+    },
+    "T4": {
+      "lr": 4.416,
+      "log_lr": 1.4852,
+      "a_pos": 1171,
+      "n_pos": 3949,
+      "b_neg": 4157,
+      "n_neg": 61898
+    }
+  },
+  "recurring_match_empirical": {
+    "lr": 0.621,
+    "log_lr": -0.4764,
+    "a_pos": 2478,
+    "n_pos": 14055,
+    "b_neg": 163768,
+    "n_neg": 576687,
+    "predicate": "\u22653 prior txns at same (ProductCD, amount \u00b1$0.02) as-of"
+  },
+  "device_tiers_by_degree": {
+    "le5": {
+      "T1": {
+        "lr": 15.4315,
+        "log_lr": 2.7364,
+        "a_pos": 153,
+        "n_pos": 1083,
+        "b_neg": 168,
+        "n_neg": 18372
+      },
+      "T2": {
+        "lr": 7.6479,
+        "log_lr": 2.0344,
+        "a_pos": 13,
+        "n_pos": 1083,
+        "b_neg": 30,
+        "n_neg": 18372
+      },
+      "T3": {
+        "lr": 33.8691,
+        "log_lr": 3.5225,
+        "a_pos": 7,
+        "n_pos": 1083,
+        "b_neg": 3,
+        "n_neg": 18372
+      },
+      "T4": {
+        "lr": 36.6916,
+        "log_lr": 3.6025,
+        "a_pos": 64,
+        "n_pos": 1083,
+        "b_neg": 29,
+        "n_neg": 18372
+      }
+    },
+    "6-20": {
+      "T1": {
+        "lr": 4.4684,
+        "log_lr": 1.497,
+        "a_pos": 504,
+        "n_pos": 1549,
+        "b_neg": 1328,
+        "n_neg": 18237
+      },
+      "T2": {
+        "lr": 4.5388,
+        "log_lr": 1.5127,
+        "a_pos": 21,
+        "n_pos": 1549,
+        "b_neg": 56,
+        "n_neg": 18237
+      },
+      "T3": {
+        "lr": 3.5998,
+        "log_lr": 1.2809,
+        "a_pos": 14,
+        "n_pos": 1549,
+        "b_neg": 48,
+        "n_neg": 18237
+      },
+      "T4": {
+        "lr": 7.7277,
+        "log_lr": 2.0448,
+        "a_pos": 413,
+        "n_pos": 1549,
+        "b_neg": 629,
+        "n_neg": 18237
+      }
+    },
+    "21-100": {
+      "T1": {
+        "lr": 2.7134,
+        "log_lr": 0.9982,
+        "a_pos": 704,
+        "n_pos": 1317,
+        "b_neg": 4981,
+        "n_neg": 25289
+      },
+      "T2": {
+        "lr": 2.2895,
+        "log_lr": 0.8283,
+        "a_pos": 39,
+        "n_pos": 1317,
+        "b_neg": 334,
+        "n_neg": 25289
+      },
+      "T3": {
+        "lr": 2.4821,
+        "log_lr": 0.9091,
+        "a_pos": 39,
+        "n_pos": 1317,
+        "b_neg": 308,
+        "n_neg": 25289
+      },
+      "T4": {
+        "lr": 3.8075,
+        "log_lr": 1.337,
+        "a_pos": 694,
+        "n_pos": 1317,
+        "b_neg": 3499,
+        "n_neg": 25289
+      }
+    }
+  }
+}

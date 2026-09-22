@@ -1,116 +1,138 @@
-# Sentinel — Social posts
+# Sentinel — social posts
+
+*Hacker House Goa 2026 × TigerGraph submission.*  Repo: **https://github.com/v4xsh/sentinel**
 
 ## X / Twitter thread
 
 **1/** We built Sentinel for @TigerGraphDB × Hacker House Goa 2026: an
-agent that reads six months of Vesta card txns as a graph and decides
-whether each of 20 flagged cases is fraud, what kind, and what to do
-next — with evidence, actions with approval routes, and (when the policy
-calls for it) a full SAR.
+agent that reads six months of card transactions as a graph, and for
+each flagged alert produces a verdict, a fraud-pattern label, actions
+with §2 approval routes, and (when the policy calls for it) a
+FinCEN-shaped SAR.
 
-**2/** Every fact the LLM cites comes from a graph query or a fitted
-model. The LLM writes prose. The policy engine decides actions. Two
-different jobs — and only one of them can hallucinate, so we contained
-it.
+**2/** Every fact the LLM cites is grounded in a graph query or a
+fitted-model coefficient. The LLM writes prose; a deterministic policy
+engine (R1–R10) decides actions. Two jobs; only one can hallucinate,
+and we contained it.
 
-**3/** TigerGraph MCP + REST + a native `vectorSearch()` installed
-query. HNSW cosine over 5,565 closed-case notes (`BAAI/bge-small-en-v1.5`
-embeddings). 8 GSQL queries in parallel via asyncio.gather ⇒ 1.5 s per
-case, down from 25 s sequential.
+**3/** TigerGraph FraudGraph + TigerVector HNSW cosine index over 5,565
+closed-case `notes_embedding` vectors. 18 installed GSQL queries; 8
+dispatched in parallel per case via `asyncio.gather` on
+`httpx.AsyncClient` → ~2 s wall-clock, down from ~25 s sequential.
 
-**4/** The alert model is an L2 logistic over 45 as-of features on all
-5,565 closed cases. 5-fold CV: **AUC 0.9465, Brier 0.09**. Fraud vs
-cleared, not fraud vs everything, so the coefficients actually surprise
-you (id_15='New' is *slightly against* fraud — half the cleared cases
-are new-phone travellers).
+**4/** All investigation graph calls go through **tigergraph-mcp** via
+a single long-lived stdio session shared across the whole process
+(background asyncio loop, daemon thread).
+`SENTINEL_GRAPH_VIA_MCP=1` is the library default. Full per-call MCP
+transcript for one case in the repo.
 
-**5/** Backtest, 150 stratified cases (75 tune / 75 held-out eval):
-- Oracle (using each case's actions_taken): **100% verdict accuracy**.
-- Simulated (τ=0.30, tuned on tune half): **83.3%**.
-Both modes: 20/20 benchmark answer files pass all I1–I11 invariants
-(SAR ⇔ FILE_REPORT, probability agrees with the settled verdict, etc.).
+**5/** Alert model: class-balanced L2 logistic over 45 as-of features
+on all 5,565 closed cases. 5-fold CV **AUC 0.9465 ± 0.0046, Brier
+0.0927**. Trained fraud-vs-cleared, not fraud-vs-everything — the
+coefficients actually surprise you (id_15='New' → -4.93; slightly
+*against* fraud, because half the cleared cases are new-phone
+travellers).
 
-**6/** FinCEN §3a policy encoding reproduces the historical SAR decision
-on **4,665 / 4,665** confirmed-fraud cases (rule-encoding test, see
-`tests/test_sar_replay.py`).
+**6/** 150-case backtest: 75 tune / 75 held-out eval. Simulated
+(τ=0.30) → **83.3% verdict accuracy**. Oracle mode (customer_response
+derived from actions_taken) → 100%, but that's a policy-engine
+correctness check, not a model claim. OOT AUC (train Jul–Sep, test
+Oct+) in the repo.
 
-**7/** UI: FastAPI backend + vanilla-JS + d3 SPA. Nine views: case list,
-detail, evidence + posterior, timeline, initial-vs-final actions with
-route badges, SAR narrative, force-layout graph neighbourhood, backtest
-report inline (reliability plot + confusion matrix), memory (live
-SentinelCase count from TG).
+**7/** FinCEN §3a policy encoding replay: fed every one of the 4,665
+`confirmed_fraud` rows through `_sar_should_file(...)` and every one
+matched the historical `report_filed` field. **4,665 / 4,665**. Rule
+encoding — the end-to-end run is the 150-case backtest.
 
-**8/** What-if endpoint: `POST /api/whatif/{case_id}` re-runs the
-policy engine with a swapped customer response. Investigators can
-preview what would have happened if the customer had said otherwise —
-deterministic, sub-10ms, no LLM.
+**8/** 20-case benchmark: **12 fraud / 8 legitimate / 0 uncertain**
+finals; **4 SARs** (HHG-004, HHG-006, HHG-011, HHG-014). All 20 answer
+files pass invariants I1–I13 (SAR ⇔ FILE_REPORT, connected_cards ⇒ §3a
++ R6, probability agrees with settled verdict, no invented case-IDs in
+prose). **113 / 113** offline pytest.
 
-**9/** Everything land-writes: each investigation becomes a
-`SentinelCase` vertex with edges to card, customer, txns, devices,
-regions, similar-prior ClosedCases. 35 vertices in the graph (20 benchmark + 15 monitoring) after
-the benchmark set. HHG-014 replayed found `CASE-HHG-014` in memory —
-the loop closes.
+**9/** Every investigation writes back a `SentinelCase` vertex with
+edges to card, customer, txns, devices, regions, similar prior
+ClosedCases. Live graph has **35** SentinelCase vertices (20 benchmark
++ 15 monitoring). Replaying HHG-014 now finds `CASE-HHG-014` in the
+retrieved memory — the loop closes.
 
-**10/** Repo, demo script, architecture writeup, backtest report, and a
-1,500-word blog post at [link]. Thanks @TigerGraphDB for the workspace
-and the dataset. #GraphRAG #Fraud
+**10/** Repo: **https://github.com/v4xsh/sentinel**. FastAPI + d3 SPA
+with 10 views (evidence, timeline, actions with what-if toggle, SAR,
+graph neighbourhood, backtest report inline, memory, monitor,
+findings). Thanks @TigerGraphDB for the workspace, the dataset, and
+the MCP stack. #GraphRAG #FraudDetection
+
+---
 
 ## LinkedIn version
 
-**Sentinel: an agentic fraud investigator on TigerGraph**
+**Sentinel — an agentic fraud investigator on TigerGraph**
 
-Submission to Hacker House Goa 2026 × TigerGraph. Sentinel is an agent
-that reads a card-transaction graph and produces, for each flagged
-alert: a verdict (fraud / legitimate / uncertain), a fraud pattern
-label, the actions the bank should take with approval routes, and a
-Suspicious Activity Report when the policy calls for one.
+Submission to Hacker House Goa 2026 × TigerGraph. Repo:
+**https://github.com/v4xsh/sentinel**
+
+Sentinel reads a card-transaction graph and, for each flagged alert,
+produces a verdict (fraud / legitimate / uncertain), a fraud-pattern
+label, the actions the bank should take with §2 approval routes, and a
+Suspicious Activity Report when policy calls for one.
 
 **The design principle**: the LLM writes prose but never decides. Every
-action the agent recommends comes from a deterministic policy engine
-implementing the 10 rules the bank's fraud team wrote. Every claim in
-the prose has a graph query or a fitted-model coefficient behind it.
-Two different jobs, and only one of them can hallucinate.
+action comes from a deterministic policy engine implementing R1–R10.
+Every claim in the prose has a graph query or a fitted-model
+coefficient behind it. Two different jobs, and only one can
+hallucinate.
 
-**Under the hood**:
-- TigerGraph FraudGraph with 7 vertex types, HNSW cosine index over
-  5,565 closed-case notes, 18 installed GSQL queries. 8 queries dispatched
-  in parallel per case via `asyncio.gather` on `httpx.AsyncClient` — 15×
-  speedup over sequential.
-- L2-logistic alert model trained on all 5,565 closed cases at once.
-  5-fold CV AUC 0.9465, Brier 0.09. 45 features spanning binary flags,
-  risk-decile one-hots, channel, and 12 device-tier × degree-bucket
-  interactions.
-- LangGraph state machine with a critic, VOI planner, deterministic
-  simulator, and a memory write-back node that persists every case as a
-  `SentinelCase` vertex with edges.
+**Under the hood**
 
-**Results on the 20-case benchmark**:
-- 20/20 answer files pass invariants I1–I11 (SAR ⇔ FILE_REPORT, verdict
-  ⇔ pattern, probability agrees with settled verdict, IDs valid,
-  actions cite rules, etc.)
-- **12 fraud, 8 legitimate, 0 uncertain** finals. 4 SARs filed.
-- HHG-014 undocumented-ring reasoning ends with `MONITOR_CONNECTED_CARDS`
-  covering the shared-device blast radius.
+- TigerGraph FraudGraph with 7 vertex types, TigerVector HNSW cosine
+  index over 5,565 closed-case notes, 18 installed GSQL queries. 8
+  dispatched in parallel per case via `asyncio.gather` on
+  `httpx.AsyncClient` — ~2 s wall-clock vs ~25 s sequential.
+- All investigation graph calls go through **tigergraph-mcp** via a
+  single long-lived stdio session shared across the whole process
+  (background asyncio loop, daemon thread). Set
+  `SENTINEL_GRAPH_VIA_MCP=0` to force the REST fast-path (used only by
+  the 150-case backtest).
+- Custom GSQL algorithm `ring_wcc`: BFS-fixpoint weakly-connected
+  component over the card–device projection.
+- LangGraph state machine (15 nodes) with a critic, VOI planner,
+  deterministic simulator (denied iff p_initial ≥ τ, with ring-T3 and
+  legit-archetype overrides), memory write-back that persists every
+  investigation as a `SentinelCase` vertex.
+
+**Results on the 20-case benchmark**
+
+- 20 / 20 answer files pass invariants I1–I13 (SAR ⇔ FILE_REPORT,
+  connected_cards ⇒ §3a + R6, probability agrees with settled verdict,
+  no invented case-IDs in prose).
+- **12 fraud, 8 legitimate, 0 uncertain** finals. **4 SARs** —
+  HHG-004 (CNP + new-device with 25 connected cards), HHG-006
+  (undocumented ring), HHG-011 (card_testing with $3.9k exposure),
+  HHG-014 (undocumented ring, analyst-flagged).
 - HHG-003 R7 (customer disputes recurring charge) correctly does NOT
   block the card.
 
-**Results on the 150-case backtest**:
-- 75-case tune half → τ tuned; 75-case held-out eval half reported
-  separately (optionally out-of-time: tune from Jul–Sep, eval Oct+).
-- Oracle mode: 100% verdict accuracy (n=150, excl. uncertain 1.000).
-- Simulated mode (τ=0.30 tuned): 83.3%.
+**Results on the 150-case backtest**
+
+- 75-case tune / 75-case held-out eval. Alert model 5-fold CV
+  **AUC 0.9465 ± 0.0046, Brier 0.0927**.
+- Simulated (τ=0.30): verdict accuracy **0.833**.
+- Oracle (customer_response derived from historical actions_taken):
+  verdict accuracy 1.000. This is a policy-engine correctness check,
+  not a model accuracy claim.
+- OOT (train Jul–Sep, test Oct+): AUC number in the repo.
 - FinCEN §3a policy encoding replay: **4,665 / 4,665** historical SAR
-  decisions reproduced (rule-encoding test).
-- Latency: 2.5 s per case with LLM off (REST fast-path), ~5 s with LLM
-  on (shared MCP session).
+  decisions reproduced (rule test).
 
-**UI**: FastAPI + vanilla JS + d3, one-command launcher (`./run_ui.sh`).
-Nine views, including a live graph neighbourhood from `card_window +
-device_neighbors`, a what-if toggle that re-runs the policy engine with
-a swapped customer response, and the full backtest report with a
-reliability plot rendered inline.
+**UI**: FastAPI + vanilla-JS + d3, one-command launcher (`./run_ui.sh`).
+10 views: cases, case detail, evidence, timeline, initial-vs-final
+actions with route badges + what-if toggle, SAR narrative, d3
+force-layout graph neighbourhood, backtest report with reliability plot
+inline, memory (live SentinelCase count), monitor (Nov–Dec sweep),
+findings (undocumented U1/U2 patterns).
 
-Repo: [link] · Demo: [link] · Blog: [link]
+Repo: **https://github.com/v4xsh/sentinel** · One-page reviewer's
+summary: `docs/SUBMISSION.md`.
 
 Thanks to @TigerGraphDB for the workspace, the dataset, and the MCP
-stack. #Fraud #GraphDatabases #TigerGraph
+stack. #Fraud #GraphDatabases #TigerGraph #GraphRAG

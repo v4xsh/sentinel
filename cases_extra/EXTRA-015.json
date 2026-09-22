@@ -1,0 +1,127 @@
+{
+  "case_id": "EXTRA-015",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9535,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3526069"
+    ],
+    "first_suspicious_txn_id": "3526069",
+    "connected_card_ids": [
+      "C13216|555.0|150.0|visa|226.0|credit"
+    ],
+    "connected_device_profiles": [
+      "iOS Device | iOS 11.3.0 | mobile safari generic | 2208x1242"
+    ],
+    "exposure_usd": 199.99,
+    "evidence": [
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=128 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3526069"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3526069"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3526069"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3526069"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.695.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3526069"
+        ]
+      },
+      {
+        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
+        "source": "graph",
+        "ref": "c6v3-pf:fallback_pattern",
+        "entity_ids": [
+          "3526069"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-EXTRA-015"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain verdict \u2014 verify with customer before acting"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "\u00a73a: p>=0.30 or evidence requested \u2014 open a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      }
+    ],
+    "what_changed": "added: BLOCK_CARD; removed: VERIFY_WITH_CUSTOMER"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $199.99 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 12,
+  "tokens": 0,
+  "latency_s": 108.86
+}

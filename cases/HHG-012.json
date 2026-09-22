@@ -1,0 +1,190 @@
+{
+  "case_id": "HHG-012",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9615,
+    "pattern": "out_of_region_use",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3553342"
+    ],
+    "first_suspicious_txn_id": "3553342",
+    "connected_card_ids": [
+      "C00969|246.0|150.0|visa|226.0|debit",
+      "C07212|514.0|150.0|visa|226.0|credit",
+      "C00197|174.0|150.0|visa|141.0|credit",
+      "C07585|361.0|150.0|visa|226.0|debit",
+      "C07612|583.0|150.0|visa|226.0|credit",
+      "C01983|321.0|150.0|visa|226.0|credit",
+      "C06224|583.0|150.0|visa|226.0|credit",
+      "C09165|111.0|150.0|mastercard|219.0|credit",
+      "C12887|499.0|150.0|visa|226.0|debit",
+      "C01974|555.0|150.0|visa|226.0|debit",
+      "C04164|225.0|150.0|mastercard|224.0|debit",
+      "C04108|514.0|150.0|mastercard|219.0|credit",
+      "C08466|404.0|150.0|visa|226.0|credit",
+      "C11716|543.0|150.0|mastercard|224.0|debit",
+      "C06631|_|150.0|visa|166.0|debit",
+      "C04125|321.0|150.0|visa|226.0|debit",
+      "C11464|111.0|150.0|visa|226.0|debit",
+      "C01689|555.0|150.0|visa|226.0|credit",
+      "C11309|583.0|150.0|visa|226.0|credit",
+      "C07311|111.0|150.0|visa|162.0|credit",
+      "C05375|_|150.0|visa|166.0|debit",
+      "C04965|490.0|150.0|visa|226.0|debit",
+      "C12690|417.0|150.0|visa|226.0|debit",
+      "C04476|555.0|150.0|visa|226.0|credit",
+      "C13302|399.0|150.0|american express|236.0|credit"
+    ],
+    "connected_device_profiles": [],
+    "exposure_usd": 30.91,
+    "evidence": [
+      {
+        "claim": "In-person txn in region 494.0 differs from home region 325.0; card had 15 concurrent home-region txns in 14d (clone-shape); card has prior activity in this region (dampener). Effective log_lr = +0.11 (base +0.14 \u00d7 damp 0.75).",
+        "source": "graph",
+        "ref": "conjunctive-lr:out_of_home_region_asof + region_history:dampened",
+        "entity_ids": [
+          "3553342",
+          "494.0"
+        ]
+      },
+      {
+        "claim": "Card has 5 prior hits at this ProductCD/amount (cadence CV=1.17). Recurring history is against fraud (empirical log_lr=-0.48).",
+        "source": "graph",
+        "ref": "lr_table:recurring_match_empirical (non-dispute)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C05876-K2"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "In-person charge in a billing region that isn't the card's observed home region (weight -0.78).",
+        "source": "graph",
+        "ref": "alert_model:out_of_home_region_asof  (weight -0.785)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
+        "source": "graph",
+        "ref": "alert_model:recurring_ge3  (weight +0.679)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the in-person / card-present channel (weight +1.57).",
+        "source": "graph",
+        "ref": "alert_model:channel_in_person  (weight +1.574)",
+        "entity_ids": [
+          "3553342"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.735.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3553342"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Case HHG-012 has been evaluated with a high probability of fraud ($p = 0.96$). The investigation highlights significant risk driven by out-of-region usage, a card-present channel indicator, and a history of prior confirmed fraud on both the specific card tuple and the customer profile. Although historical graph comparators like CC-4349 typically clear when travel is verified, the risk here is compounded by prior confirmed fraud and the customer explicitly denying making the transaction. Consequently, the policy engine has triggered the immediate execution of blocking the card and creating a formal case.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-012"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain verdict \u2014 verify with customer before acting"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "\u00a73a: p>=0.30 or evidence requested \u2014 open a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      }
+    ],
+    "what_changed": "added: BLOCK_CARD; removed: VERIFY_WITH_CUSTOMER"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $30.91 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 11,
+  "tokens": 1106,
+  "latency_s": 102.007
+}

@@ -1,0 +1,146 @@
+{
+  "case_id": "HHG-017",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.85,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3450436",
+      "3450503",
+      "3450629"
+    ],
+    "first_suspicious_txn_id": "3450629",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "Windows | Windows 10 | chrome 65.0 | 1920x1080"
+    ],
+    "exposure_usd": 300.14,
+    "evidence": [
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=302 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
+      {
+        "claim": "Connection went through an anonymous or transparent proxy (`id_23` starts with IP_PROXY). Historically this correlates with cleared reviews as often as fraud (model weight -1.59).",
+        "source": "graph",
+        "ref": "alert_model:proxy_flag  (weight -1.590)",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.320.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
+      {
+        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
+        "source": "graph",
+        "ref": "c6v3-pf:fallback_pattern",
+        "entity_ids": [
+          "3450629"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-5446",
+      "CC-0443",
+      "CC-5172",
+      "CC-0261",
+      "CC-5217",
+      "CC-4734",
+      "CC-5345",
+      "CC-2956",
+      "CC-5481",
+      "CC-0623"
+    ],
+    "summary": "Case HHG-017 has been evaluated as fraud with a calibrated probability of 0.85, driven by a high-risk online channel and a device associated with a known hub-cap device family utilizing a hidden IP proxy. Although the historical alert model baseline and proxy indicators initially suggested lower risk, the customer explicitly denied making the transaction during outreach. This direct customer denial, combined with the fallback card-not-present fraud pattern, solidified the fraudulent classification of the activity. Following this verdict, the card has been blocked and a formal case has been created for further investigation.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-017"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain verdict \u2014 verify with customer before acting"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "\u00a73a: p>=0.30 or evidence requested \u2014 open a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      }
+    ],
+    "what_changed": "Customer denied shifted the posterior from 0.32 to 0.85, causing the action list to update."
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $300.14 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 12,
+  "tokens": 565,
+  "latency_s": 37.781
+}

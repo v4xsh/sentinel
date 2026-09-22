@@ -1,0 +1,146 @@
+{
+  "case_id": "HHG-013",
+  "case": {
+    "status": "closed_legitimate",
+    "verdict": "legitimate",
+    "fraud_probability": 0.0579,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [],
+    "first_suspicious_txn_id": "",
+    "connected_card_ids": [
+      "C10745|298.0|150.0|visa|226.0|debit",
+      "C07711|555.0|150.0|visa|226.0|debit",
+      "C07671|452.0|150.0|mastercard|117.0|debit",
+      "C04865|562.0|150.0|mastercard|219.0|credit"
+    ],
+    "connected_device_profiles": [
+      "Windows | - | chrome 66.0 | -"
+    ],
+    "exposure_usd": 0.0,
+    "evidence": [
+      {
+        "claim": "Online txn from a device flagged New.  device_profile=Windows | - | chrome 66.0 | -",
+        "source": "graph",
+        "ref": "conjunctive-lr:new_device",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "ATO shape: 1 online txn(s) on id_15='New' in \u00b148h  (n_online in \u00b148h = 1).",
+        "source": "graph",
+        "ref": "conjunctive-lr:ato \u00b148h + mixed_channel_last_24h",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=266 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C07671-K2"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "Vesta's `id_15` flag is 'New' \u2014 a first-seen-on-this-card device. In the labelled history this coincides more with cleared alerts (travel, new phone) than with confirmed fraud (model weight -4.93).",
+        "source": "graph",
+        "ref": "alert_model:id_15_new  (weight -4.932)",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
+        "source": "graph",
+        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3526826"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Case HHG-013 involves an online card-not-present transaction initiated from a new Windows device running Chrome, triggering a `card_not_present_new_device` pattern with a low calibrated fraud probability of 0.06. While the history reveals prior confirmed fraud cases on both this card tuple and a different card, along with a top-decile risk score and online channel usage, the new device flag historically aligns more frequently with benign events like travel or new phones rather than actual fraud. Similar historical cases such as CC-3475, CC-2367, and CC-0852 demonstrate that high-risk alerts can successfully clear when legitimate customer activity\u2014such as travel\u2014is verified. Weighing these behavioral indicators and historical precedents, the policy engine ultimately determined that the alert should be closed as legitimate. Consequently, the decided action for this case is CLOSE_NO_FRAUD, meaning no further restrictions or verifications will be applied to the transaction.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-013"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+      }
+    ],
+    "final": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "No customer response was required; posterior converged.",
+  "tool_calls": 10,
+  "tokens": 1272,
+  "latency_s": 100.818
+}

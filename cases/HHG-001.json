@@ -1,0 +1,166 @@
+{
+  "case_id": "HHG-001",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9615,
+    "pattern": "out_of_region_use",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3514030"
+    ],
+    "first_suspicious_txn_id": "3514030",
+    "connected_card_ids": [
+      "C12382|242.0|150.0|visa|166.0|debit"
+    ],
+    "connected_device_profiles": [],
+    "exposure_usd": 77.07,
+    "evidence": [
+      {
+        "claim": "In-person txn in region 444.0 differs from home region 204.0; card had 6 concurrent home-region txns in 14d (clone-shape); card has prior activity in this region (dampener). Effective log_lr = +0.11 (base +0.14 \u00d7 damp 0.75).",
+        "source": "graph",
+        "ref": "conjunctive-lr:out_of_home_region_asof + region_history:dampened",
+        "entity_ids": [
+          "3514030",
+          "444.0"
+        ]
+      },
+      {
+        "claim": "Card has 5 prior hits at this ProductCD/amount (cadence CV=0.95). Recurring history is against fraud (empirical log_lr=-0.48).",
+        "source": "graph",
+        "ref": "lr_table:recurring_match_empirical (non-dispute)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C12382-K1"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "In-person charge in a billing region that isn't the card's observed home region (weight -0.78).",
+        "source": "graph",
+        "ref": "alert_model:out_of_home_region_asof  (weight -0.785)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
+        "source": "graph",
+        "ref": "alert_model:recurring_ge3  (weight +0.679)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the in-person / card-present channel (weight +1.57).",
+        "source": "graph",
+        "ref": "alert_model:channel_in_person  (weight +1.574)",
+        "entity_ids": [
+          "3514030"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.735.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3514030"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Analyst review of case HHG-001 concludes with a fraud verdict at a calibrated probability of 0.96, driven primarily by an out-of-region card-present transaction accompanied by a direct customer denial. The evidence ledger shows strong risk indicators, including prior confirmed fraud cases associated with both this specific card tuple and the broader customer profile, which heavily outweigh dampening factors like recurring amount history and a low-leaning baseline model decile. Although similar cleared cases such as CC-2367, CC-0443, and CC-4349 involved out-of-region cardholder travel, the explicit customer denial in this instance definitively settled the outcome against the cardholder. In accordance with the policy engine's determinations, the system has executed a card block and officially created a fraud case.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-001"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain verdict \u2014 verify with customer before acting"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "\u00a73a: p>=0.30 or evidence requested \u2014 open a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      }
+    ],
+    "what_changed": "added: BLOCK_CARD; removed: VERIFY_WITH_CUSTOMER"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $77.07 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 10,
+  "tokens": 1154,
+  "latency_s": 124.24
+}

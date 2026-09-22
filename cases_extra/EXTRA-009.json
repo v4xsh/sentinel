@@ -1,0 +1,142 @@
+{
+  "case_id": "EXTRA-009",
+  "case": {
+    "status": "closed_legitimate",
+    "verdict": "legitimate",
+    "fraud_probability": 0.1387,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [],
+    "first_suspicious_txn_id": "",
+    "connected_card_ids": [
+      "C08269|490.0|150.0|visa|226.0|debit"
+    ],
+    "connected_device_profiles": [],
+    "exposure_usd": 0.0,
+    "evidence": [
+      {
+        "claim": "In-person txn in region 327.0 differs from home region 204.0; card had 19 concurrent home-region txns in 14d (clone-shape); card has prior activity in this region (dampener). Effective log_lr = +0.11 (base +0.14 \u00d7 damp 0.75).",
+        "source": "graph",
+        "ref": "conjunctive-lr:out_of_home_region_asof + region_history:dampened",
+        "entity_ids": [
+          "3446975",
+          "327.0"
+        ]
+      },
+      {
+        "claim": "Amount $1331.06 > $1,000 on in_person channel. Card has 14 prior txn(s) \u2265 $666 and the device is not new \u2014 big-purchase-cleared archetype fits.",
+        "source": "graph",
+        "ref": "signal:amt_gt_1000 + prior-purchase-history",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C08269-K1"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "In-person charge in a billing region that isn't the card's observed home region (weight -0.78).",
+        "source": "graph",
+        "ref": "alert_model:out_of_home_region_asof  (weight -0.785)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "Amount is \u22653\u03c3 away from this card's typical spend (weight -2.60).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_3  (weight -2.597)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3446975"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the in-person / card-present channel (weight +1.57).",
+        "source": "graph",
+        "ref": "alert_model:channel_in_person  (weight +1.574)",
+        "entity_ids": [
+          "3446975"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-EXTRA-009"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+      }
+    ],
+    "final": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "No customer response was required; posterior converged.",
+  "tool_calls": 11,
+  "tokens": 0,
+  "latency_s": 109.706
+}

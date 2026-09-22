@@ -1,0 +1,151 @@
+{
+  "case_id": "HHG-010",
+  "case": {
+    "status": "closed_legitimate",
+    "verdict": "legitimate",
+    "fraud_probability": 0.02,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [],
+    "first_suspicious_txn_id": "",
+    "connected_card_ids": [
+      "C02375|399.0|150.0|american express|150.0|credit",
+      "C10434|258.0|150.0|visa|226.0|credit",
+      "C11951|562.0|150.0|mastercard|197.0|credit",
+      "C05245|100.0|150.0|visa|226.0|debit",
+      "C06224|583.0|150.0|visa|226.0|credit",
+      "C03218|321.0|150.0|visa|226.0|debit",
+      "C03100|555.0|150.0|visa|226.0|credit",
+      "C10422|537.0|150.0|mastercard|224.0|debit",
+      "C02354|490.0|150.0|visa|226.0|debit",
+      "C12690|417.0|150.0|visa|226.0|debit",
+      "C06270|399.0|150.0|american express|150.0|credit",
+      "C06220|562.0|150.0|visa|226.0|credit",
+      "C08918|111.0|150.0|visa|162.0|credit",
+      "C11309|583.0|150.0|visa|226.0|credit",
+      "C03040|583.0|150.0|visa|226.0|credit",
+      "C00854|170.0|150.0|mastercard|102.0|credit",
+      "C03185|399.0|150.0|american express|198.0|credit",
+      "C11677|252.0|150.0|visa|226.0|debit",
+      "C07997|170.0|150.0|visa|226.0|credit",
+      "C08489|170.0|150.0|visa|226.0|credit",
+      "C12942|264.0|150.0|visa|162.0|credit",
+      "C07878|453.0|150.0|american express|131.0|credit",
+      "C13001|490.0|150.0|visa|226.0|debit",
+      "C11000|514.0|150.0|mastercard|102.0|credit",
+      "C09241|321.0|150.0|visa|226.0|debit"
+    ],
+    "connected_device_profiles": [
+      "Windows | Windows 10 | edge 16.0 | 1366x768"
+    ],
+    "exposure_usd": 0.0,
+    "evidence": [
+      {
+        "claim": "Online txn from a device flagged New.  device_profile=Windows | Windows 10 | edge 16.0 | 1366x768",
+        "source": "graph",
+        "ref": "conjunctive-lr:new_device",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=209 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Vesta's `id_15` flag is 'New' \u2014 a first-seen-on-this-card device. In the labelled history this coincides more with cleared alerts (travel, new phone) than with confirmed fraud (model weight -4.93).",
+        "source": "graph",
+        "ref": "alert_model:id_15_new  (weight -4.932)",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
+        "source": "graph",
+        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Amount is \u22653\u03c3 away from this card's typical spend (weight -2.60).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_3  (weight -2.597)",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3506725"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Analyst summary for case HHG-010 indicates a legitimate transaction with a calibrated fraud probability of 0.02. Although the online transaction originated from a new Windows 10 device on this card and the amount deviated significantly from typical spend, historical risk indicators leaned heavily toward clearance. Specifically, Vesta's first-seen device flag and the bank's top-decile score aligned with patterns historically associated with cleared alerts rather than confirmed fraud, similar to the cleared travel-related alert in case CC-0933. Consequently, the policy engine determined that no further fraud is present. Following this assessment, the system executed the decision to close the case as no fraud.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-010"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+      }
+    ],
+    "final": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "No customer response was required; posterior converged.",
+  "tool_calls": 12,
+  "tokens": 1044,
+  "latency_s": 102.927
+}

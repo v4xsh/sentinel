@@ -1,0 +1,195 @@
+{
+  "case_id": "EXTRA-012",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.917,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3576519",
+      "3577035",
+      "3577080",
+      "3577546",
+      "3577637",
+      "3578079",
+      "3578101",
+      "3578108",
+      "3578120",
+      "3578130",
+      "3578163",
+      "3578183",
+      "3578259",
+      "3578302",
+      "3578304",
+      "3578372",
+      "3578385",
+      "3578411",
+      "3578425",
+      "3578441",
+      "3578468",
+      "3578502",
+      "3578745",
+      "3579337",
+      "3579441",
+      "3579497",
+      "3579584",
+      "3579863",
+      "3580780",
+      "3580793",
+      "3581004",
+      "3581016",
+      "3581018",
+      "3581202",
+      "3581223",
+      "3581226",
+      "3581363",
+      "3581435",
+      "3581470",
+      "3581530",
+      "3581544",
+      "3581843",
+      "3581906",
+      "3581949",
+      "3583319",
+      "3583423",
+      "3583491",
+      "3584033",
+      "3584034",
+      "3584049",
+      "3584060",
+      "3584513",
+      "3584586",
+      "3584826",
+      "3585129",
+      "3585305",
+      "3585465",
+      "3585585",
+      "3585748",
+      "3586151",
+      "3586158",
+      "3586304",
+      "3586333",
+      "3586335",
+      "3586350"
+    ],
+    "first_suspicious_txn_id": "3576519",
+    "connected_card_ids": [
+      "C05381|_|_|_|_|_"
+    ],
+    "connected_device_profiles": [
+      "Ilium X510 Build/MRA58K | - | chrome 49.0 for android | -"
+    ],
+    "exposure_usd": 2926.71,
+    "evidence": [
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C05381-K1"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3581530"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3581530"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3581530"
+        ]
+      },
+      {
+        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
+        "source": "graph",
+        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
+        "entity_ids": [
+          "3581530"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3581530"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3581530"
+        ]
+      },
+      {
+        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
+        "source": "graph",
+        "ref": "c6v3-pf:fallback_pattern",
+        "entity_ids": [
+          "3581530"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-EXTRA-012"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L2",
+        "reason": "R2/R6: confirmed fraud \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: confirmed fraud \u2014 open case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L2",
+        "reason": "R2/R6: confirmed fraud \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: confirmed fraud \u2014 open case"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $2926.71 vs $1,000 threshold (above), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "No customer response was required; posterior converged.",
+  "tool_calls": 10,
+  "tokens": 0,
+  "latency_s": 107.703
+}

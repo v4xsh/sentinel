@@ -1,0 +1,221 @@
+{
+  "case_id": "HHG-014",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.8585,
+    "pattern": "undocumented",
+    "pattern_description": "Case HHG-014 involves an online transaction initiated from a new device hiding behind an anonymous proxy, which the customer explicitly denies making. The policy engine assigned the \"undocumented\" fraud pattern to this activity. A similar prior case is CC-4186.",
+    "affected_txn_ids": [
+      "3460634",
+      "3478561"
+    ],
+    "first_suspicious_txn_id": "3460634",
+    "connected_card_ids": [
+      "C03744|224.0|106.0|mastercard|137.0|debit",
+      "C11468|174.0|150.0|mastercard|_|credit",
+      "C12900|310.0|150.0|mastercard|224.0|debit",
+      "C09049|555.0|150.0|visa|226.0|debit",
+      "C10955|404.0|150.0|mastercard|102.0|credit",
+      "C12033|174.0|150.0|visa|226.0|credit",
+      "C10326|555.0|150.0|visa|226.0|debit",
+      "C12132|360.0|150.0|mastercard|126.0|debit",
+      "C11687|564.0|150.0|visa|226.0|debit",
+      "C05448|302.0|150.0|visa|226.0|debit",
+      "C13291|555.0|150.0|visa|226.0|debit",
+      "C12033|523.0|150.0|visa|226.0|credit",
+      "C12574|111.0|150.0|visa|226.0|credit",
+      "C07472|380.0|150.0|visa|226.0|debit",
+      "C12132|360.0|150.0|mastercard|166.0|debit",
+      "C03551|555.0|150.0|visa|226.0|debit",
+      "C11082|321.0|150.0|visa|226.0|credit",
+      "C07562|545.0|185.0|visa|137.0|credit",
+      "C08962|408.0|185.0|mastercard|224.0|debit",
+      "C11923|545.0|185.0|visa|138.0|debit",
+      "C09174|567.0|150.0|mastercard|195.0|debit",
+      "C05381|408.0|185.0|mastercard|224.0|debit",
+      "C09657|545.0|185.0|visa|226.0|credit",
+      "C11919|500.0|185.0|mastercard|219.0|credit",
+      "C11670|_|150.0|visa|226.0|debit"
+    ],
+    "connected_device_profiles": [
+      "SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080"
+    ],
+    "exposure_usd": 187.33,
+    "evidence": [
+      {
+        "claim": "Online txn from a device flagged New behind an anonymous/hidden proxy.  device_profile=SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080",
+        "source": "graph",
+        "ref": "conjunctive-lr:new_device + proxy",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "ATO shape: 1 online txn(s) on id_15='New' in \u00b148h; 1 online txn(s) via IP_PROXY:* in \u00b148h  (n_online in \u00b148h = 1).",
+        "source": "graph",
+        "ref": "conjunctive-lr:ato \u00b148h + mixed_channel_last_24h",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "Device tier T4: KNOWN_DEVICE deg=52, 74 other cards in window, 4 confirmed-fraud ClosedCase(s) already attached to this device; LR(T4)=3.808.",
+        "source": "graph",
+        "ref": "query:ring_components + lr_table:device_tiers.T4",
+        "entity_ids": [
+          "3478561",
+          "C03744|224.0|106.0|mastercard|137.0|debit",
+          "C11468|174.0|150.0|mastercard|_|credit",
+          "C12900|310.0|150.0|mastercard|224.0|debit",
+          "C09049|555.0|150.0|visa|226.0|debit",
+          "C10955|404.0|150.0|mastercard|102.0|credit"
+        ]
+      },
+      {
+        "claim": "Model risk_score=0.05 (decile 3/10). Alert-conditional LR (fraud vs cleared) clipped to \u00b10.7 log-LR = +0.70.",
+        "source": "graph",
+        "ref": "lr_table:risk_decile_alert_conditional[3]",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "Vesta's `id_15` flag is 'New' \u2014 a first-seen-on-this-card device. In the labelled history this coincides more with cleared alerts (travel, new phone) than with confirmed fraud (model weight -4.93).",
+        "source": "graph",
+        "ref": "alert_model:id_15_new  (weight -4.932)",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "Connection went through an anonymous or transparent proxy (`id_23` starts with IP_PROXY). Historically this correlates with cleared reviews as often as fraud (model weight -1.59).",
+        "source": "graph",
+        "ref": "alert_model:proxy_flag  (weight -1.590)",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 3/10; among historical alerts this decile leans toward fraud (model weight +0.77).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_3  (weight +0.767)",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.403.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3478561"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Case HHG-014 has been assessed as fraud with a calibrated probability of 0.86, driven by a combination of suspicious digital identity flags and direct customer denial. The online transaction originated from a new device operating behind an anonymous proxy, sharing infrastructure with a high-risk Tier 4 device linked to multiple prior confirmed fraud cases. Although the bank's initial model score and certain isolated device flags leaned toward cleared reviews, the customer explicitly denied making the transaction, solidifying the fraudulent nature of the activity. Similar historical incidents, such as case CC-4186, similarly involved unauthorized online purchases executed from previously unseen devices. Following this verdict, the policy engine has triggered the necessary containment actions, including blocking the card, creating a case, filing a report, and monitoring connected cards.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-014"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain undocumented ring on online + id_15='New' \u2014 step up before file"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R9: undocumented / coordinated abuse \u2014 open a case"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R9: coordinated cross-customer activity requires a SAR"
+      },
+      {
+        "action": "ESCALATE_TO_ANALYST",
+        "route": "auto",
+        "reason": "R9: hand to a human analyst for review"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R9/R6: monitor cards sharing this device"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R2/R6: monitor cards sharing this device"
+      }
+    ],
+    "what_changed": "added: BLOCK_CARD; removed: STEP_UP_AUTH, ESCALATE_TO_ANALYST"
+  },
+  "sar": {
+    "file": true,
+    "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented",
+    "narrative": "Financial Institution (Case ID: HHG-014) is filing this suspicious activity report regarding a fraudulent online transaction totaling $187.33. The transaction was executed from a previously unseen device profile (SM-G935F running Android 7.0) utilizing an anonymous or hidden proxy connection. Further risk analysis revealed that the associated device is classified as Tier 4 (KNOWN_DEVICE) with a degree of 52, having been linked to 74 other payment cards within the operational window and carrying four confirmed-fraud closed cases. The customer has explicitly denied making or authorizing this transaction. Consequently, the transaction was marked as fraudulent and subjected to review. This activity shares behavioral characteristics with prior fraudulent incidents, such as Case CC-4186, which involved unauthorized card-not-present activity originating from a newly introduced device. The card has been blocked and flagged to prevent further unauthorized exposure.",
+    "subjects": [
+      "C13487",
+      "C13487-K1",
+      "3478561"
+    ],
+    "total_amount_usd": 187.33,
+    "activity_dates": [
+      "2016-11-22",
+      "2016-11-22"
+    ]
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 12,
+  "tokens": 3328,
+  "latency_s": 171.832
+}

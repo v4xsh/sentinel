@@ -1,0 +1,167 @@
+{
+  "case_id": "HHG-002",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9087,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3478782"
+    ],
+    "first_suspicious_txn_id": "3478782",
+    "connected_card_ids": [
+      "C11891|177.0|185.0|mastercard|195.0|credit"
+    ],
+    "connected_device_profiles": [
+      "- | - | - | -"
+    ],
+    "exposure_usd": 292.36,
+    "evidence": [
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=1324 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C11891-K1"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Amount is \u22653\u03c3 away from this card's typical spend (weight -2.60).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_3  (weight -2.597)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.525.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
+        "source": "graph",
+        "ref": "c6v3-pf:fallback_pattern",
+        "entity_ids": [
+          "3478782"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Case HHG-002 has been classified as fraud with a calibrated probability of 0.91 under the card-not-present fraud pattern. The investigation is heavily driven by historical and channel evidence, including a prior confirmed fraud case on this card tuple, a confirmed-fraud history for the customer on a different card, and the transaction occurring on the online channel. Additionally, the device is tied to a known hub family exceeding the cap, and the customer has explicitly denied making the transaction. This profile contrasts with cleared historical comparables like case CC-2367, where alerts were resolved due to verified cardholder travel. Following this determination, the policy engine has executed the required actions to block the card and create a formal case.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-002"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain verdict \u2014 verify with customer before acting"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "\u00a73a: p>=0.30 or evidence requested \u2014 open a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      }
+    ],
+    "what_changed": "added: BLOCK_CARD; removed: VERIFY_WITH_CUSTOMER"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $292.36 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 10,
+  "tokens": 1093,
+  "latency_s": 164.872
+}

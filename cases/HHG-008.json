@@ -1,0 +1,211 @@
+{
+  "case_id": "HHG-008",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.98,
+    "pattern": "card_not_present_fraud",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3518407",
+      "3530782",
+      "3539878",
+      "3551233",
+      "3553223",
+      "3553269",
+      "3553275",
+      "3553281",
+      "3554288",
+      "3554589",
+      "3554683",
+      "3555638",
+      "3555768",
+      "3556719",
+      "3557118",
+      "3557979",
+      "3557987",
+      "3558054",
+      "3558907",
+      "3561532",
+      "3561904"
+    ],
+    "first_suspicious_txn_id": "3518407",
+    "connected_card_ids": [
+      "C03231|250.0|150.0|visa|226.0|credit",
+      "C12807|352.0|117.0|mastercard|134.0|credit",
+      "C07347|555.0|102.0|mastercard|224.0|debit",
+      "C11509|_|_|_|_|_",
+      "C12695|555.0|185.0|mastercard|137.0|credit",
+      "C02147|500.0|185.0|mastercard|224.0|credit",
+      "C13406|438.0|106.0|visa|_|debit",
+      "C06630|500.0|185.0|mastercard|137.0|credit",
+      "C02116|555.0|147.0|visa|137.0|credit",
+      "C06793|408.0|185.0|mastercard|224.0|debit",
+      "C00583|545.0|185.0|visa|226.0|credit",
+      "C06464|177.0|185.0|mastercard|224.0|credit",
+      "C02147|_|_|_|_|_",
+      "C11844|103.0|185.0|visa|137.0|credit",
+      "C01521|130.0|185.0|visa|137.0|credit",
+      "C01279|_|117.0|visa|_|debit",
+      "C03488|415.0|185.0|mastercard|195.0|credit",
+      "C00978|500.0|185.0|mastercard|224.0|credit",
+      "C02851|555.0|185.0|visa|226.0|credit",
+      "C08962|408.0|185.0|mastercard|224.0|debit",
+      "C11923|545.0|185.0|visa|138.0|debit",
+      "C04248|202.0|185.0|mastercard|137.0|credit",
+      "C11214|179.0|106.0|visa|137.0|debit",
+      "C04505|555.0|185.0|mastercard|224.0|credit",
+      "C07618|580.0|106.0|visa|195.0|credit"
+    ],
+    "connected_device_profiles": [
+      "- | - | chrome 66.0 | -"
+    ],
+    "exposure_usd": 897.65,
+    "evidence": [
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=175 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "Model risk_score=0.38 (decile 9/10). Alert-conditional LR (fraud vs cleared) clipped to \u00b10.7 log-LR = +0.70.",
+        "source": "graph",
+        "ref": "lr_table:risk_decile_alert_conditional[9]",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C13171-K2"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
+        "source": "graph",
+        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 9/10; among historical alerts this decile leans toward fraud (model weight +1.64).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_9  (weight +1.638)",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "Posterior before customer contact: 1.000.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
+        "source": "graph",
+        "ref": "c6v3-pf:fallback_pattern",
+        "entity_ids": [
+          "3558054"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Analyst summary for case HHG-008:\n\nThis card-not-present fraud case involves an online transaction flagged by the model in the 9th decile of risk, combined with a device family showing a high hub cap degree and a sequence of five or more online transactions within forty-eight hours. Historical records indicate that both this specific card tuple and the customer on a different card have prior confirmed-fraud cases, reinforcing the risk profile. The customer explicitly denies making the transaction, directly settling the fraud verdict with a calibrated probability of 0.98. Similar prior cases such as CC-4276 and CC-5444 also involved confirmed card-not-present fraudulent online purchases. In accordance with the policy engine's decisions, the system will block the card and create a case.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-008"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2/R6: confirmed fraud \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: confirmed fraud \u2014 open case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $897.65 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 10,
+  "tokens": 1261,
+  "latency_s": 101.506
+}

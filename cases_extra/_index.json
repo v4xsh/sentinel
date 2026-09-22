@@ -1,0 +1,375 @@
+[
+  {
+    "case_id": "EXTRA-001",
+    "txn_id": "3549837",
+    "customer_id": "C00750",
+    "opened_at": "2016-12-16 23:40:18",
+    "risk_score": 0.99,
+    "verdict": "fraud",
+    "p_initial": 0.8985630009259529,
+    "p_final": 0.8986,
+    "pattern": "account_takeover",
+    "exposure": 524.94,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE",
+      "BLOCK_ALL_CARDS"
+    ],
+    "graph_case_id": "CASE-EXTRA-001",
+    "latency_s": 86.46
+  },
+  {
+    "case_id": "EXTRA-002",
+    "txn_id": "3471965",
+    "customer_id": "C06962",
+    "opened_at": "2016-11-19 23:42:32",
+    "risk_score": 0.99,
+    "verdict": "legitimate",
+    "p_initial": 0.13873245258277328,
+    "p_final": 0.1387,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-002",
+    "latency_s": 107.019
+  },
+  {
+    "case_id": "EXTRA-003",
+    "txn_id": "3469573",
+    "customer_id": "C06464",
+    "opened_at": "2016-11-19 01:52:00",
+    "risk_score": 0.99,
+    "verdict": "legitimate",
+    "p_initial": 0.0656821172489,
+    "p_final": 0.0657,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-003",
+    "latency_s": 106.292
+  },
+  {
+    "case_id": "EXTRA-004",
+    "txn_id": "3436706",
+    "customer_id": "C01154",
+    "opened_at": "2016-11-06 22:43:38",
+    "risk_score": 0.99,
+    "verdict": "fraud",
+    "p_initial": 0.5844775613055647,
+    "p_final": 0.9268,
+    "pattern": "out_of_region_use",
+    "exposure": 4368.02,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-004",
+    "latency_s": 104.771
+  },
+  {
+    "case_id": "EXTRA-005",
+    "txn_id": "3542004",
+    "customer_id": "C02716",
+    "opened_at": "2016-12-14 14:37:08",
+    "risk_score": 0.98,
+    "verdict": "legitimate",
+    "p_initial": 0.10004450944164762,
+    "p_final": 0.1,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-005",
+    "latency_s": 105.72
+  },
+  {
+    "case_id": "EXTRA-006",
+    "txn_id": "3524594",
+    "customer_id": "C07212",
+    "opened_at": "2016-12-08 13:35:22",
+    "risk_score": 0.98,
+    "verdict": "legitimate",
+    "p_initial": 0.060039310807095334,
+    "p_final": 0.06,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-006",
+    "latency_s": 106.439
+  },
+  {
+    "case_id": "EXTRA-007",
+    "txn_id": "3500526",
+    "customer_id": "C12680",
+    "opened_at": "2016-11-30 16:18:10",
+    "risk_score": 0.98,
+    "verdict": "legitimate",
+    "p_initial": 0.057905825212441565,
+    "p_final": 0.0579,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-007",
+    "latency_s": 106.673
+  },
+  {
+    "case_id": "EXTRA-008",
+    "txn_id": "3467310",
+    "customer_id": "C04034",
+    "opened_at": "2016-11-18 09:11:22",
+    "risk_score": 0.98,
+    "verdict": "fraud",
+    "p_initial": 0.9069716929028916,
+    "p_final": 0.907,
+    "pattern": "card_not_present_new_device",
+    "exposure": 51.6,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE",
+      "BLOCK_ALL_CARDS"
+    ],
+    "graph_case_id": "CASE-EXTRA-008",
+    "latency_s": 105.452
+  },
+  {
+    "case_id": "EXTRA-009",
+    "txn_id": "3446975",
+    "customer_id": "C08269",
+    "opened_at": "2016-11-10 18:15:24",
+    "risk_score": 0.98,
+    "verdict": "legitimate",
+    "p_initial": 0.13873245258277328,
+    "p_final": 0.1387,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-009",
+    "latency_s": 109.706
+  },
+  {
+    "case_id": "EXTRA-010",
+    "txn_id": "3435614",
+    "customer_id": "C01155",
+    "opened_at": "2016-11-06 17:14:46",
+    "risk_score": 0.98,
+    "verdict": "legitimate",
+    "p_initial": 0.10004450944164762,
+    "p_final": 0.1,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-010",
+    "latency_s": 108.476
+  },
+  {
+    "case_id": "EXTRA-011",
+    "txn_id": "3589881",
+    "customer_id": "C11509",
+    "opened_at": "2016-12-31 19:02:21",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.9709857095725232,
+    "p_final": 0.971,
+    "pattern": "card_not_present_fraud",
+    "exposure": 831.54,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-011",
+    "latency_s": 110.528
+  },
+  {
+    "case_id": "EXTRA-012",
+    "txn_id": "3581530",
+    "customer_id": "C05381",
+    "opened_at": "2016-12-28 15:33:36",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.9169501896253371,
+    "p_final": 0.917,
+    "pattern": "card_not_present_fraud",
+    "exposure": 2926.71,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-012",
+    "latency_s": 107.703
+  },
+  {
+    "case_id": "EXTRA-013",
+    "txn_id": "3581276",
+    "customer_id": "C11000",
+    "opened_at": "2016-12-28 13:46:11",
+    "risk_score": 0.97,
+    "verdict": "legitimate",
+    "p_initial": 0.12877715379878865,
+    "p_final": 0.1288,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-013",
+    "latency_s": 108.696
+  },
+  {
+    "case_id": "EXTRA-014",
+    "txn_id": "3528137",
+    "customer_id": "C03738",
+    "opened_at": "2016-12-09 18:25:00",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.8315113294692732,
+    "p_final": 0.9777,
+    "pattern": "account_takeover",
+    "exposure": 58.97,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE",
+      "BLOCK_ALL_CARDS"
+    ],
+    "graph_case_id": "CASE-EXTRA-014",
+    "latency_s": 104.535
+  },
+  {
+    "case_id": "EXTRA-015",
+    "txn_id": "3526069",
+    "customer_id": "C13216",
+    "opened_at": "2016-12-08 22:13:53",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.6949796740681516,
+    "p_final": 0.9535,
+    "pattern": "card_not_present_fraud",
+    "exposure": 199.99,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-015",
+    "latency_s": 108.86
+  },
+  {
+    "case_id": "EXTRA-016",
+    "txn_id": "3516131",
+    "customer_id": "C06224",
+    "opened_at": "2016-12-05 15:46:13",
+    "risk_score": 0.97,
+    "verdict": "legitimate",
+    "p_initial": 0.11181593277569853,
+    "p_final": 0.1118,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-016",
+    "latency_s": 107.39
+  },
+  {
+    "case_id": "EXTRA-017",
+    "txn_id": "3515392",
+    "customer_id": "C11444",
+    "opened_at": "2016-12-05 04:01:37",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.5583757969202039,
+    "p_final": 0.9192,
+    "pattern": "card_not_present_fraud",
+    "exposure": 574.9,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-017",
+    "latency_s": 109.145
+  },
+  {
+    "case_id": "EXTRA-018",
+    "txn_id": "3511767",
+    "customer_id": "C05029",
+    "opened_at": "2016-12-03 23:56:40",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.7550465161868308,
+    "p_final": 0.9652,
+    "pattern": "none",
+    "exposure": 49.06,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-018",
+    "latency_s": 111.861
+  },
+  {
+    "case_id": "EXTRA-019",
+    "txn_id": "3500355",
+    "customer_id": "C07325",
+    "opened_at": "2016-11-30 15:25:50",
+    "risk_score": 0.97,
+    "verdict": "fraud",
+    "p_initial": 0.4211388232161165,
+    "p_final": 0.8675,
+    "pattern": "none",
+    "exposure": 161.07,
+    "sar": false,
+    "actions": [
+      "BLOCK_CARD",
+      "CREATE_CASE"
+    ],
+    "graph_case_id": "CASE-EXTRA-019",
+    "latency_s": 110.095
+  },
+  {
+    "case_id": "EXTRA-020",
+    "txn_id": "3497655",
+    "customer_id": "C01782",
+    "opened_at": "2016-11-29 17:16:04",
+    "risk_score": 0.97,
+    "verdict": "legitimate",
+    "p_initial": 0.057905825212441565,
+    "p_final": 0.0579,
+    "pattern": "none",
+    "exposure": 0.0,
+    "sar": false,
+    "actions": [
+      "CLOSE_NO_FRAUD"
+    ],
+    "graph_case_id": "CASE-EXTRA-020",
+    "latency_s": 105.426
+  }
+]

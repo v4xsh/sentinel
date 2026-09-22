@@ -1,0 +1,203 @@
+{
+  "case_id": "HHG-006",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.8782,
+    "pattern": "undocumented",
+    "pattern_description": "Case HHG-006 exhibits an undocumented fraud pattern involving an online transaction from a newly flagged device and an ATO shape consisting of four online transactions within a 48-hour window. Additionally, the activity features a threshold-structured burst of transactions just below $500, and the customer explicitly denies making the transaction. A similar prior case is CC-2947.",
+    "affected_txn_ids": [
+      "3476602",
+      "3476682"
+    ],
+    "first_suspicious_txn_id": "3476602",
+    "connected_card_ids": [
+      "C07297|455.0|150.0|mastercard|126.0|debit"
+    ],
+    "connected_device_profiles": [
+      "Trident/7.0 | Windows 7 | ie 11.0 for desktop | 1920x1080"
+    ],
+    "exposure_usd": 961.07,
+    "evidence": [
+      {
+        "claim": "Online txn from a device flagged New.  device_profile=Trident/7.0 | Windows 7 | ie 11.0 for desktop | 1920x1080",
+        "source": "graph",
+        "ref": "conjunctive-lr:new_device",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "ATO shape: 4 online txn(s) on id_15='New' in \u00b148h; 2 online txn(s) via IP_PROXY:* in \u00b148h  (n_online in \u00b148h = 4).",
+        "source": "graph",
+        "ref": "conjunctive-lr:ato \u00b148h + mixed_channel_last_24h",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Device family has KNOWN_DEVICE degree=547 (>100 hub cap). Ring-component signal suppressed.",
+        "source": "graph",
+        "ref": "query:ring_components  |  hub_cap_100",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Threshold-structured burst: 3 online txns just below $500 within the window \u2014 structuring shape.",
+        "source": "graph",
+        "ref": "query:near_threshold_burst  |  prior: hand-set",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Model risk_score=0.25 (decile 8/10). Alert-conditional LR (fraud vs cleared) clipped to \u00b10.7 log-LR = +0.70.",
+        "source": "graph",
+        "ref": "lr_table:risk_decile_alert_conditional[8]",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Vesta's `id_15` flag is 'New' \u2014 a first-seen-on-this-card device. In the labelled history this coincides more with cleared alerts (travel, new phone) than with confirmed fraud (model weight -4.93).",
+        "source": "graph",
+        "ref": "alert_model:id_15_new  (weight -4.932)",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Amount is \u22653\u03c3 away from this card's typical spend (weight -2.60).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_3  (weight -2.597)",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
+        "source": "graph",
+        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 8/10; among historical alerts this decile leans toward fraud (model weight +1.52).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_8  (weight +1.516)",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
+        "source": "graph",
+        "ref": "alert_model:channel_online  (weight +2.715)",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Posterior before customer contact: 0.448.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3476682"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Case HHG-006 has been evaluated with a calibrated fraud probability of 0.88, driven by an undocumented pattern involving suspicious account takeover indicators and an online channel transaction. The evidence ledger highlights a threshold-structured burst of transactions just below $500, an amount falling significantly outside the card's typical spend, and a first-seen device tied to proxy usage. Furthermore, historical risk scoring placed the alert in decile 8/10, and the customer explicitly denied making the transaction, which aligns with prior confirmed fraud cases like CC-2947. In response to this verdict, the policy engine has triggered automated measures to block the card, create a case, file a report, and monitor connected cards.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-006"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "R1/\u00a75: uncertain undocumented ring on online + id_15='New' \u2014 step up before file"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R9: undocumented / coordinated abuse \u2014 open a case"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R9: coordinated cross-customer activity requires a SAR"
+      },
+      {
+        "action": "ESCALATE_TO_ANALYST",
+        "route": "auto",
+        "reason": "R9: hand to a human analyst for review"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denied"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: monitor cards linked by the undocumented shape"
+      }
+    ],
+    "what_changed": "added: BLOCK_CARD, MONITOR_CONNECTED_CARDS; removed: STEP_UP_AUTH, ESCALATE_TO_ANALYST"
+  },
+  "sar": {
+    "file": true,
+    "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented",
+    "narrative": "This Suspicious Activity Report details fraudulent online activity associated with Case ID HHG-006, resulting in an exposure of $961.07. The transaction originated from a newly flagged device utilizing Windows 7 and Internet Explorer 11 via an IP proxy, exhibiting Account Takeover (ATO) characteristics with four online transactions occurring within a 48-hour window. Further analysis revealed a threshold-structured burst pattern consisting of three online transactions positioned just below the $500 threshold, combined with an irregular transaction amount significantly deviating from the cardholder's typical spending baseline. The customer explicitly denied authorizing the transaction, prompting a definitive fraud verdict. Similar fraudulent activity is documented in prior case CC-2947, which involved confirmed unauthorized transactions and cardholder denial. The bank's risk model successfully flagged the activity, leading to immediate protective measures and the mitigation of further risk to the card.",
+    "subjects": [
+      "C07297",
+      "C07297-K1",
+      "3476682"
+    ],
+    "total_amount_usd": 961.07,
+    "activity_dates": [
+      "2016-11-21",
+      "2016-11-21"
+    ]
+  },
+  "stop_reason": "Customer response (denied) settled the verdict.",
+  "tool_calls": 12,
+  "tokens": 3296,
+  "latency_s": 107.524
+}

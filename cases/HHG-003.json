@@ -1,0 +1,206 @@
+{
+  "case_id": "HHG-003",
+  "case": {
+    "status": "closed_legitimate",
+    "verdict": "legitimate",
+    "fraud_probability": 0.15,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [],
+    "first_suspicious_txn_id": "",
+    "connected_card_ids": [
+      "C11522|181.0|150.0|visa|226.0|credit",
+      "C09557|555.0|150.0|visa|226.0|debit",
+      "C05905|258.0|150.0|visa|226.0|credit",
+      "C11000|514.0|150.0|mastercard|102.0|credit",
+      "C07518|583.0|150.0|visa|226.0|credit",
+      "C04196|583.0|150.0|visa|226.0|credit",
+      "C12512|208.0|150.0|mastercard|219.0|debit",
+      "C06220|562.0|150.0|visa|226.0|credit",
+      "C03047|174.0|150.0|visa|226.0|debit",
+      "C09692|555.0|150.0|mastercard|117.0|debit",
+      "C08918|111.0|150.0|visa|162.0|credit",
+      "C11005|111.0|150.0|visa|162.0|credit",
+      "C05761|512.0|150.0|mastercard|117.0|debit",
+      "C00750|327.0|150.0|discover|102.0|credit",
+      "C03278|404.0|150.0|mastercard|102.0|credit",
+      "C04798|158.0|150.0|visa|226.0|debit",
+      "C01982|494.0|150.0|visa|226.0|credit",
+      "C11797|555.0|150.0|visa|226.0|credit",
+      "C02716|583.0|150.0|visa|226.0|credit",
+      "C00889|111.0|150.0|visa|226.0|debit",
+      "C05600|399.0|150.0|american express|118.0|credit",
+      "C12897|583.0|150.0|visa|226.0|credit",
+      "C13456|489.0|150.0|mastercard|102.0|credit",
+      "C09165|111.0|150.0|mastercard|219.0|credit",
+      "C05704|170.0|150.0|visa|226.0|credit"
+    ],
+    "connected_device_profiles": [],
+    "exposure_usd": 0.0,
+    "evidence": [
+      {
+        "claim": "In-person txn in region 330.0 differs from home region 299.0; card had 9 concurrent home-region txns in 14d (clone-shape); card has prior activity in this region (dampener). Effective log_lr = +0.11 (base +0.14 \u00d7 damp 0.75).",
+        "source": "graph",
+        "ref": "conjunctive-lr:out_of_home_region_asof + region_history:dampened",
+        "entity_ids": [
+          "3530164",
+          "330.0"
+        ]
+      },
+      {
+        "claim": "Card has 7 prior hits at this ProductCD/amount (cadence CV=0.63, 6 distinct addr1). Matches R7's 'disputed but legitimate' shape.",
+        "source": "graph",
+        "ref": "query:recurring_match  |  R7 (dispute-triggered)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Model risk_score=0.40 (decile 10/10). Alert-conditional LR (fraud vs cleared) clipped to \u00b10.7 log-LR = +0.70.",
+        "source": "graph",
+        "ref": "lr_table:risk_decile_alert_conditional[10]",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "source": "graph",
+        "ref": "signal:prior_fraud_on_card_tuple",
+        "entity_ids": [
+          "C08623-K2"
+        ]
+      },
+      {
+        "claim": "Alert model baseline (fitted on 5,565 historical cases).",
+        "source": "graph",
+        "ref": "alert_model:__intercept__  (weight +2.646)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "In-person charge in a billing region that isn't the card's observed home region (weight -0.78).",
+        "source": "graph",
+        "ref": "alert_model:out_of_home_region_asof  (weight -0.785)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
+        "source": "graph",
+        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
+        "source": "graph",
+        "ref": "alert_model:recurring_ge3  (weight +0.679)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
+        "source": "graph",
+        "ref": "alert_model:risk_decile_10  (weight -4.538)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Alerted transaction is on the in-person / card-present channel (weight +1.57).",
+        "source": "graph",
+        "ref": "alert_model:channel_in_person  (weight +1.574)",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Customer confirms making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:confirmed",
+        "entity_ids": []
+      },
+      {
+        "claim": "Posterior before customer contact: 0.735.",
+        "source": "graph",
+        "ref": "alert_model:__pre_response_p__",
+        "entity_ids": [
+          "3530164"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "Case HHG-003 was investigated as an out-of-region use pattern featuring an in-person charge in a billing region differing from the card's observed home region, though prior activity in this region and a dampener reduced the net regional impact. Historical risk indicators included a 10/10 model decile score, an alert-present channel weight, and prior confirmed fraud cases associated with both the card tuple and the customer. However, the recurring amount shape and prior cadence matched a legitimate-disputed profile, and the customer ultimately confirmed making the transaction. This mirrors prior confirmed fraud cases such as CC-2678 involving out-of-region use, but direct customer confirmation established the legitimate verdict with a calibrated probability of fraud of 0.15. Following this verification, the policy engine actions decided to create the case, verify with the customer, and warn the customer.",
+    "written_to_graph": true,
+    "graph_case_id": "CASE-HHG-003"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they made this purchase."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R7: dispute against a recurring charge \u2014 case opened for the record"
+      },
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R7: verify the customer really disputes this recurring charge"
+      },
+      {
+        "action": "WARN_CUSTOMER",
+        "route": "auto",
+        "reason": "R7: send a recurring-charge reminder"
+      }
+    ],
+    "final": [
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R7: dispute against a recurring charge \u2014 case opened for the record"
+      },
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R7: verify the customer really disputes this recurring charge"
+      },
+      {
+        "action": "WARN_CUSTOMER",
+        "route": "auto",
+        "reason": "R7: send a recurring-charge reminder"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0.0,
+    "activity_dates": []
+  },
+  "stop_reason": "Customer response (confirmed) settled the verdict.",
+  "tool_calls": 11,
+  "tokens": 1375,
+  "latency_s": 102.851
+}

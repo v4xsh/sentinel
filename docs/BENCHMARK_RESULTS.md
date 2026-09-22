@@ -1,0 +1,75 @@
+# 20-case benchmark — results
+
+Every case ran end-to-end through the LangGraph agent with all graph tool calls dispatched through the shared TigerGraph MCP session (see `docs/MCP_TRANSCRIPT_HHG-014.md` for the captured tool-call log). Alert-model coefficients from `sentinel/evidence/alert_model.json` (L2 logistic, 5-fold CV AUC 0.9465). Each SentinelCase was written back to the graph via the `write_case` installed query.
+
+## Summary
+
+- 12 fraud, 8 legitimate, 0 uncertain
+- 4 SAR filings
+- All 20 answer files pass invariants I1-I11
+
+## Case table
+
+| case | trigger | verdict | p_i → p_f | pattern | exposure | evidence request (assumed response) | initial → final actions | SAR | graph_case_id |
+|---|---|---|---|---|---|---|---|---|---|
+| HHG-001 | risk_score | **fraud** | 0.962 → 0.962 | out_of_region_use | $77.07 | customer_validation(Customer states they did) | `VERIFY_WITH_CUSTOMER,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-001` |
+| HHG-002 | risk_score | **fraud** | 0.909 → 0.909 | card_not_present_fraud | $292.36 | customer_validation(Customer states they did) | `VERIFY_WITH_CUSTOMER,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-002` |
+| HHG-003 | customer_report | **legitimate** | 0.150 → 0.150 | none | $0.00 | customer_validation(Customer states they mad) | `CREATE_CASE,VERIFY_WITH_CUSTOMER,WAR` → `CREATE_CASE,VERIFY_WITH_CUSTOMER,WAR` | — | `CASE-HHG-003` |
+| HHG-004 | customer_report | **fraud** | 0.968 → 0.968 | card_not_present_new_device | $128.33 | customer_validation(Customer states they did) | `MONITOR_CARD,VERIFY_WITH_CUSTOMER,CR` → `BLOCK_CARD,CREATE_CASE,FILE_REPORT,M` | ✓ | `CASE-HHG-004` |
+| HHG-005 | risk_score | **legitimate** | 0.020 → 0.020 | none | $0.00 | — | `CLOSE_NO_FRAUD` → `CLOSE_NO_FRAUD` | — | `CASE-HHG-005` |
+| HHG-006 | customer_report | **fraud** | 0.878 → 0.878 | undocumented | $961.07 | customer_validation(Customer states they did) | `STEP_UP_AUTH,CREATE_CASE,FILE_REPORT` → `BLOCK_CARD,CREATE_CASE,FILE_REPORT,M` | ✓ | `CASE-HHG-006` |
+| HHG-007 | risk_score | **fraud** | 0.965 → 0.965 | account_takeover | $111.92 | customer_validation(Customer states they did) | `VERIFY_WITH_CUSTOMER,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-007` |
+| HHG-008 | customer_report | **fraud** | 0.980 → 0.980 | card_not_present_fraud | $897.65 | customer_validation(Customer states they did) | `BLOCK_CARD,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-008` |
+| HHG-009 | customer_report | **fraud** | 0.980 → 0.980 | card_not_present_fraud | $30.02 | customer_validation(Customer states they did) | `MONITOR_CARD,VERIFY_WITH_CUSTOMER,CR` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-009` |
+| HHG-010 | risk_score | **legitimate** | 0.020 → 0.020 | none | $0.00 | — | `CLOSE_NO_FRAUD` → `CLOSE_NO_FRAUD` | — | `CASE-HHG-010` |
+| HHG-011 | customer_report | **fraud** | 0.850 → 0.850 | card_testing | $3,984.80 | customer_validation(Customer states they did) | `CLOSE_NO_FRAUD` → `BLOCK_CARD,CREATE_CASE,FILE_REPORT,M` | ✓ | `CASE-HHG-011` |
+| HHG-012 | risk_score | **fraud** | 0.962 → 0.962 | out_of_region_use | $30.91 | customer_validation(Customer states they did) | `VERIFY_WITH_CUSTOMER,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-012` |
+| HHG-013 | risk_score | **legitimate** | 0.058 → 0.058 | none | $0.00 | — | `CLOSE_NO_FRAUD` → `CLOSE_NO_FRAUD` | — | `CASE-HHG-013` |
+| HHG-014 | analyst_request | **fraud** | 0.859 → 0.859 | undocumented | $187.33 | customer_validation(Customer states they did) | `STEP_UP_AUTH,CREATE_CASE,FILE_REPORT` → `BLOCK_CARD,CREATE_CASE,FILE_REPORT,M` | ✓ | `CASE-HHG-014` |
+| HHG-015 | risk_score | **legitimate** | 0.020 → 0.020 | none | $0.00 | — | `CLOSE_NO_FRAUD` → `CLOSE_NO_FRAUD` | — | `CASE-HHG-015` |
+| HHG-016 | customer_report | **fraud** | 0.980 → 0.980 | card_not_present_new_device | $59.67 | customer_validation(Customer states they did) | `BLOCK_CARD,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-016` |
+| HHG-017 | risk_score | **fraud** | 0.850 → 0.850 | card_not_present_fraud | $300.14 | customer_validation(Customer states they did) | `VERIFY_WITH_CUSTOMER,CREATE_CASE` → `BLOCK_CARD,CREATE_CASE` | — | `CASE-HHG-017` |
+| HHG-018 | customer_report | **legitimate** | 0.150 → 0.150 | none | $0.00 | customer_validation(Customer states they mad) | `CREATE_CASE,VERIFY_WITH_CUSTOMER,WAR` → `CREATE_CASE,VERIFY_WITH_CUSTOMER,WAR` | — | `CASE-HHG-018` |
+| HHG-019 | risk_score | **legitimate** | 0.058 → 0.058 | none | $0.00 | — | `CLOSE_NO_FRAUD` → `CLOSE_NO_FRAUD` | — | `CASE-HHG-019` |
+| HHG-020 | risk_score | **legitimate** | 0.070 → 0.070 | none | $0.00 | — | `CLOSE_NO_FRAUD` → `CLOSE_NO_FRAUD` | — | `CASE-HHG-020` |
+
+## Per-case rationale
+
+**HHG-001**: **fraud** — p=0.96. Pattern **out_of_region_use** on exposure **$77.07** (1 txns after signature expansion). Top evidence: [conjunctive-lr] In-person txn in region 444.0 differs from home region 204.0; card had 6 concurrent home-r; [lr_table] Card has 5 prior hits at this ProductCD/amount (cadence CV=0.95). Recurring history is aga; [signal] This card tuple has ≥1 prior confirmed_fraud case closed before this txn.. Actions routed per §2 exposure bands.
+**HHG-002**: **fraud** — p=0.91. Pattern **card_not_present_fraud** on exposure **$292.36** (1 txns after signature expansion). Top evidence: [query] Device family has KNOWN_DEVICE degree=1324 (>100 hub cap). Ring-component signal suppresse; [signal] This card tuple has ≥1 prior confirmed_fraud case closed before this txn.; [alert_model] Alert model baseline (fitted on 5,565 historical cases).. Actions routed per §2 exposure bands.
+**HHG-003**: **legitimate** — p=0.15. §6 response settled the verdict. Top evidence: [conjunctive-lr] In-person txn in region 330.0 differs from home region 299.0; card had 9 concurrent home-r; [query] Card has 7 prior hits at this ProductCD/amount (cadence CV=0.63, 6 distinct addr1). Matche; [lr_table] Model risk_score=0.40 (decile 10/10). Alert-conditional LR (fraud vs cleared) clipped to ±.
+**HHG-004**: **fraud** — p=0.97. Pattern **card_not_present_new_device** on exposure **$128.33** (1 txns after signature expansion). Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=- | - | firefox 47.0 | -; [query] Device family shared with 57 other cards in the window (KNOWN_DEVICE degree=6). No prior c; [lr_table] Model risk_score=0.34 (decile 9/10). Alert-conditional LR (fraud vs cleared) clipped to ±0. §3a SAR filed. Actions routed per §2 exposure bands.
+**HHG-005**: **legitimate** — p=0.02. §6 response settled the verdict. Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=iOS Device | iOS 9.3.5 | mobile safa; [query] Device family has KNOWN_DEVICE degree=112 (>100 hub cap). Ring-component signal suppressed; [signal] This card tuple has ≥1 prior confirmed_fraud case closed before this txn..
+**HHG-006**: **fraud** — p=0.88. Pattern **undocumented** on exposure **$961.07** (2 txns after signature expansion). Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Trident/7.0 | Windows 7 | ie 11.0 fo; [conjunctive-lr] ATO shape: 4 online txn(s) on id_15='New' in ±48h; 2 online txn(s) via IP_PROXY:* in ±48h ; [query] Device family has KNOWN_DEVICE degree=547 (>100 hub cap). Ring-component signal suppressed. §3a SAR filed. Actions routed per §2 exposure bands.
+**HHG-007**: **fraud** — p=0.97. Pattern **account_takeover** on exposure **$111.92** (1 txns after signature expansion). Top evidence: [conjunctive-lr] ATO shape: 2 online txn(s) on id_15='New' in ±48h  (n_online in ±48h = 2).; [lr_table] Card has 3 prior hits at this ProductCD/amount (cadence CV=0.79). Recurring history is aga; [signal] This card tuple has ≥1 prior confirmed_fraud case closed before this txn.. Actions routed per §2 exposure bands.
+**HHG-008**: **fraud** — p=0.98. Pattern **card_not_present_fraud** on exposure **$897.65** (21 txns after signature expansion). Top evidence: [query] Device family has KNOWN_DEVICE degree=175 (>100 hub cap). Ring-component signal suppressed; [lr_table] Model risk_score=0.38 (decile 9/10). Alert-conditional LR (fraud vs cleared) clipped to ±0; [signal] This card tuple has ≥1 prior confirmed_fraud case closed before this txn.. Actions routed per §2 exposure bands.
+**HHG-009**: **fraud** — p=0.98. Pattern **card_not_present_fraud** on exposure **$30.02** (1 txns after signature expansion). Top evidence: [query] Device family has KNOWN_DEVICE degree=1324 (>100 hub cap). Ring-component signal suppresse; [lr_table] Model risk_score=0.28 (decile 9/10). Alert-conditional LR (fraud vs cleared) clipped to ±0; [alert_model] Alert model baseline (fitted on 5,565 historical cases).. Actions routed per §2 exposure bands.
+**HHG-010**: **legitimate** — p=0.02. §6 response settled the verdict. Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Windows | Windows 10 | edge 16.0 | 1; [query] Device family has KNOWN_DEVICE degree=209 (>100 hub cap). Ring-component signal suppressed; [alert_model] Alert model baseline (fitted on 5,565 historical cases)..
+**HHG-011**: **fraud** — p=0.85. Pattern **card_testing** on exposure **$3,984.80** (84 txns after signature expansion). Top evidence: [query] Card-testing shape from testing_sequence query: 14 sub-$5 online txn(s) + 34 larger follow; [conjunctive-lr] Online txn from a device flagged New.  device_profile=SM-G610F Build/NRD90M | - | chrome 6; [query] Device family shared with 352 other cards in the window (KNOWN_DEVICE degree=4). No prior . §3a SAR filed. Actions routed per §2 exposure bands.
+**HHG-012**: **fraud** — p=0.96. Pattern **out_of_region_use** on exposure **$30.91** (1 txns after signature expansion). Top evidence: [conjunctive-lr] In-person txn in region 494.0 differs from home region 325.0; card had 15 concurrent home-; [lr_table] Card has 5 prior hits at this ProductCD/amount (cadence CV=1.17). Recurring history is aga; [signal] This card tuple has ≥1 prior confirmed_fraud case closed before this txn.. Actions routed per §2 exposure bands.
+**HHG-013**: **legitimate** — p=0.06. §6 response settled the verdict. Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Windows | - | chrome 66.0 | -; [conjunctive-lr] ATO shape: 1 online txn(s) on id_15='New' in ±48h  (n_online in ±48h = 1).; [query] Device family has KNOWN_DEVICE degree=266 (>100 hub cap). Ring-component signal suppressed.
+**HHG-014**: **fraud** — p=0.86. Pattern **undocumented** on exposure **$187.33** (2 txns after signature expansion). Top evidence: [conjunctive-lr] Online txn from a device flagged New behind an anonymous/hidden proxy.  device_profile=SM-; [conjunctive-lr] ATO shape: 1 online txn(s) on id_15='New' in ±48h; 1 online txn(s) via IP_PROXY:* in ±48h ; [query] Device tier T4: KNOWN_DEVICE deg=52, 74 other cards in window, 4 confirmed-fraud ClosedCas. §3a SAR filed. Actions routed per §2 exposure bands.
+**HHG-015**: **legitimate** — p=0.02. §6 response settled the verdict. Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Trident/7.0 | Windows 8.1 | ie 11.0 ; [conjunctive-lr] ATO shape: 1 online txn(s) on id_15='New' in ±48h  (n_online in ±48h = 1).; [query] Device family shared with 11 other cards in the window (KNOWN_DEVICE degree=8). No prior c.
+**HHG-016**: **fraud** — p=0.98. Pattern **card_not_present_new_device** on exposure **$59.67** (1 txns after signature expansion). Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Windows | - | edge 16.0 | -; [query] Device family has KNOWN_DEVICE degree=163 (>100 hub cap). Ring-component signal suppressed; [lr_table] Model risk_score=0.37 (decile 9/10). Alert-conditional LR (fraud vs cleared) clipped to ±0. Actions routed per §2 exposure bands.
+**HHG-017**: **fraud** — p=0.85. Pattern **card_not_present_fraud** on exposure **$300.14** (3 txns after signature expansion). Top evidence: [query] Device family has KNOWN_DEVICE degree=302 (>100 hub cap). Ring-component signal suppressed; [alert_model] Alert model baseline (fitted on 5,565 historical cases).; [alert_model] Connection went through an anonymous or transparent proxy (`id_23` starts with IP_PROXY). . Actions routed per §2 exposure bands.
+**HHG-018**: **legitimate** — p=0.15. §6 response settled the verdict. Top evidence: [conjunctive-lr] In-person txn in region 126.0 differs from home region 325.0; card had 407 concurrent home; [conjunctive-lr] ATO shape: mixed-channel activity in 24h; 6 online txn(s) on id_15='New' in ±48h  (n_onlin; [query] Card has 42 prior hits at this ProductCD/amount (cadence CV=0.88, 4 distinct addr1). Match.
+**HHG-019**: **legitimate** — p=0.06. §6 response settled the verdict. Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Windows | other | chrome 61.0 | 1280; [conjunctive-lr] ATO shape: 1 online txn(s) on id_15='New' in ±48h  (n_online in ±48h = 1).; [query] Device family shared with 4 other cards in the window (KNOWN_DEVICE degree=5). No prior co.
+**HHG-020**: **legitimate** — p=0.07. §6 response settled the verdict. Top evidence: [conjunctive-lr] Online txn from a device flagged New.  device_profile=Trident/7.0 | Windows 10 | ie 11.0 f; [conjunctive-lr] ATO shape: 1 online txn(s) on id_15='New' in ±48h  (n_online in ±48h = 1).; [query] Device family has KNOWN_DEVICE degree=254 (>100 hub cap). Ring-component signal suppressed.
+
+## SAR decisions (§3a justification)
+
+**HHG-004** — verdict `fraud`, pattern `card_not_present_new_device`, exposure **$128.33**. Connected cards: 25. SAR narrative (excerpt): **SUSPICIOUS ACTIVITY REPORT NARRATIVE**
+
+**Case ID:** HHG-004  
+**Exposure Amount:** $128.33  
+
+Institution detected suspicious card-not-present activity involving an online transaction totaling $128.33 processed via th…
+
+**HHG-006** — verdict `fraud`, pattern `undocumented`, exposure **$961.07**. Connected cards: 1. SAR narrative (excerpt): This Suspicious Activity Report details fraudulent online activity associated with Case ID HHG-006, resulting in an exposure of $961.07. The transaction originated from a newly flagged device utilizing Windows 7 and Inte…
+
+**HHG-011** — verdict `fraud`, pattern `card_testing`, exposure **$3,984.80**. Connected cards: 25. SAR narrative (excerpt): Suspicious activity involving card testing and subsequent unauthorized charges was identified under Case ID HHG-011, resulting in a total financial exposure of $3,984.80. The transaction sequence exhibited a classic card…
+
+**HHG-014** — verdict `fraud`, pattern `undocumented`, exposure **$187.33**. Connected cards: 25. SAR narrative (excerpt): Financial Institution (Case ID: HHG-014) is filing this suspicious activity report regarding a fraudulent online transaction totaling $187.33. The transaction was executed from a previously unseen device profile (SM-G935…
+
+
+Every other fraud verdict stayed under §3a's threshold combination (exposure ≤ $1,000 AND no shared_element AND pattern ≠ `undocumented`).

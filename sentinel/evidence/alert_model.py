@@ -239,7 +239,7 @@ def fit_and_save(seed: int = 42, C: float = 1.0) -> dict:
     from sklearn.metrics import roc_auc_score
 
     from sentinel.data.features import connect
-    con = connect()
+    con = connect(read_only=False)
 
     X, y, ids = _build_feature_matrix(con)
     logger.info("features: %d columns, %d rows (%d pos, %d neg)",

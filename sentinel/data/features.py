@@ -62,8 +62,16 @@ class CardTuple:
 # ---------- feature-store construction ------------------------------------------
 
 
-def connect() -> duckdb.DuckDBPyConnection:
-    con = duckdb.connect(str(DUCKDB_PATH))
+def connect(read_only: bool = True) -> duckdb.DuckDBPyConnection:
+    """Open the DuckDB feature store.
+
+    Defaults to ``read_only=True`` so the UI, a live agent run, and a
+    background backtest can all hold the file at the same time —
+    otherwise duckdb's exclusive file lock triggers the "Conflicting
+    lock is held" error we hit repeatedly. Feature builders that
+    create/alter tables must pass ``read_only=False`` explicitly.
+    """
+    con = duckdb.connect(str(DUCKDB_PATH), read_only=read_only)
     con.execute("PRAGMA threads=8")
     con.execute("PRAGMA memory_limit='6GB'")
     return con
@@ -541,7 +549,7 @@ def compare_txn_to_baseline(
 
 
 if __name__ == "__main__":  # pragma: no cover
-    con = connect()
+    con = connect(read_only=False)
     counts = build_all(con)
     for k, v in counts.items():
         print(f"  {k:<24} {v:,}")

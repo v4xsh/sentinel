@@ -27,9 +27,16 @@ TX = f"read_parquet('{PARQUET / 'transactions.parquet'}')"
 
 @pytest.fixture(scope="session")
 def con() -> duckdb.DuckDBPyConnection:
-    """Rebuild the feature store once for the whole test session."""
-    c = connect()
-    build_all(c)
+    """Rebuild the feature store once, then re-open read-only for tests.
+
+    Keeping the R/W connection open would block every other session
+    connection (duckdb's exclusive lock semantics), so we close it after
+    the build and hand out a read-only view for the assertions.
+    """
+    writer = connect(read_only=False)
+    build_all(writer)
+    writer.close()
+    c = connect(read_only=True)
     yield c
     c.close()
 

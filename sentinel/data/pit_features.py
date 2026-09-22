@@ -373,7 +373,7 @@ if __name__ == "__main__":  # pragma: no cover
     from sentinel.data.features import build_all as _phase1_build_all
     from sentinel.data.features import connect
 
-    con = connect()
+    con = connect(read_only=False)
     _phase1_build_all(con)
     n = build(con)
     print(f"txn_features rows: {n:,}")

@@ -295,7 +295,7 @@ SCOPES: dict[str, str] = {
 
 
 def build() -> dict:
-    con = connect()
+    con = connect(read_only=False)
     n_pos, n_neg, n_cleared = _prepare_labels(con)
     _prep_baseline_derivations(con)
 

@@ -166,7 +166,7 @@ def reliability_plot(
 
 
 def main() -> None:
-    con = connect()
+    con = connect(read_only=False)
     lr = load_lr_table()
 
     # Ensure txn_features + fraud_txn_labels + negative_txn_labels exist.

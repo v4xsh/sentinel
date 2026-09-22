@@ -32,7 +32,7 @@ WINDOW = {
 
 @pytest.fixture(scope="module")
 def u1_reference_tuple_ids() -> set[str]:
-    con = connect()
+    con = connect(read_only=False)
     build_all(con)
     ids = con.execute(
         f"""

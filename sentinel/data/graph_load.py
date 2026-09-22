@@ -575,7 +575,7 @@ ALL_EMITTERS: list[tuple[str, callable]] = [
 
 def emit_all() -> dict[str, tuple[Path, int]]:
     """Emit every CSV and return {name: (path, row_count)}."""
-    con = connect()
+    con = connect(read_only=False)
     # Assume the feature store is already built (features.build_all).
     result: dict[str, tuple[Path, int]] = {}
     for name, fn in ALL_EMITTERS:

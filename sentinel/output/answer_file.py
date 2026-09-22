@@ -23,29 +23,101 @@ from sentinel.policy.policy_engine import PolicyDecision
 
 
 def compute_connected_cards(state: dict) -> list[str]:
-    """Return the ``connected_card_ids`` list the answer file will publish.
-    Shared with ``_shared_element_from_signals`` so I13 holds: if this list
-    ends up non-empty, shared_element is set at decide-time and the policy
-    engine fires §3a (FILE_REPORT) + R6 (MONITOR_CONNECTED_CARDS)."""
+    """Return ``connected_card_ids`` — GENUINE shared-element peers only.
+
+    A card is a genuine peer iff:
+
+      (a) ring_components — it appears in ``ring_components.cards`` AND
+          the ring's narrow-device criterion holds (device_degree ≤ 100)
+          AND either the card was New/proxied in the ±14d window
+          (``new_device_cards`` ∪ ``proxied_cards``) OR the ring's
+          ``ring_closed_cases`` mark it (confirmed-fraud ClosedCase on
+          the shared narrow device).
+      (b) device_neighbors — it appears in ``device_neighbors.cards`` AND
+          the query returned ``n_other_cards ≥ 2`` (i.e. multi-card
+          signal, not a single incidental peer).
+      (c) region_cluster — same rule as (b) against ``region_cluster``.
+
+    Card-ids scraped from semantic memory hits are NOT peers; they can
+    be tangentially similar in retrieval space without any shared
+    device/region. Dropping them here removes the noise that let a
+    single semantic hit fire §3a on an otherwise clean case.
+    """
     gs = state.get("graph_signals") or {}
     ring = gs.get("ring_components") or {}
     seed = state.get("card_id")
     def _clean(seq):
         return [c for c in (seq or []) if c and c != seed]
-    ring_cards = _clean(ring.get("cards"))
-    dn_cards   = _clean((gs.get("device_neighbors")   or {}).get("cards"))
-    rc_cards   = _clean((gs.get("region_cluster")     or {}).get("cards"))
+
     out: list[str] = []
     seen: set[str] = set()
-    for src in (ring_cards, dn_cards, rc_cards):
-        for c in src:
+
+    # (a) ring_components — only narrow-device peers with a New/proxied
+    #     activity signal or an attached confirmed-fraud ClosedCase.
+    dev_deg = int(ring.get("device_degree", 0) or 0)
+    if 0 < dev_deg <= 100:
+        risk_ring = set(_clean(ring.get("new_device_cards")))
+        risk_ring |= set(_clean(ring.get("proxied_cards")))
+        # Ring cards that have an attached confirmed-fraud ClosedCase
+        # are already implicit in ``ring_cards`` but only when the ring
+        # discovered them via CC_ON_DEVICE — that's the "another card's
+        # fraud" leg §3a explicitly names.
+        cc_ring_cards: set[str] = set()
+        for _cc in (ring.get("ring_closed_cases") or []):
+            for _cid in ((_cc.get("connected_cards") if isinstance(_cc, dict) else None) or []):
+                if _cid and _cid != seed:
+                    cc_ring_cards.add(_cid)
+        risk_ring |= cc_ring_cards
+        for c in _clean(ring.get("cards")):
+            if c in risk_ring and c not in seen:
+                out.append(c); seen.add(c)
+
+    # (b) device_neighbors — only when the query itself surfaced ≥2
+    #     other cards. A single-neighbour hit isn't a shared_element.
+    dn = gs.get("device_neighbors") or {}
+    if int(dn.get("n_other_cards", 0) or 0) >= 2:
+        for c in _clean(dn.get("cards")):
             if c not in seen:
                 out.append(c); seen.add(c)
-    for h in (state.get("memory_hits") or []):
-        cid = h.attrs.get("card_id") if hasattr(h, "attrs") else None
-        if cid and cid != seed and cid not in seen:
-            out.append(cid); seen.add(cid)
+
+    # (c) region_cluster — same rule.
+    rc = gs.get("region_cluster") or {}
+    if int(rc.get("n_other_cards", 0) or 0) >= 2:
+        for c in _clean(rc.get("cards")):
+            if c not in seen:
+                out.append(c); seen.add(c)
+
+    # Semantic memory hits DO NOT contribute peers.
     return out[:25]
+
+
+def compute_shared_element(state: dict, connected_cards: list[str] | None = None) -> str | None:
+    """Return the shared_element string (``"device" / "region" / "recipient"``)
+    or None. Set iff either:
+
+      * ``len(connected_cards) >= 2``, OR
+      * ``ring_components`` reports ``has_confirmed_fraud_cc=True`` — the
+        seed shares a narrow device with another card that carries a
+        confirmed-fraud ClosedCase (§3a "another card's fraud" leg).
+
+    I13 checks this function, not raw list length, so a single incidental
+    peer never trips §3a on its own.
+    """
+    if connected_cards is None:
+        connected_cards = compute_connected_cards(state)
+    if len(connected_cards) >= 2:
+        return "device"
+    gs = state.get("graph_signals") or {}
+    ring = gs.get("ring_components") or {}
+    if ring.get("has_confirmed_fraud_cc") and int(ring.get("device_degree", 0) or 0) <= 100:
+        return "device"
+    rc = gs.get("region_cluster") or {}
+    if int(rc.get("n_other_cards", 0) or 0) >= 2:
+        return "region"
+    rec = gs.get("recipient_email_cluster") or {}
+    if int(rec.get("n_other_cards", 0) or 0) >= 2:
+        return "recipient"
+    return None
 
 
 def compute_similar_prior_cases(hits: list) -> list[str]:

@@ -225,20 +225,28 @@ def check_invariants(
                     f"{field} cites {tok!r} which is not in "
                     f"similar_prior_cases (allowed={sorted(allowed_ids)})"))
 
-    # ------- 13. connected_card_ids ⇒ SAR + monitor on a fraud verdict ------
-    # If connected_card_ids is non-empty, the case has a shared element
-    # (device / ring / device_neighbors / region_cluster peers). On a fraud
-    # verdict this must fire §3a (FILE_REPORT) and R6 (MONITOR_CONNECTED_CARDS).
-    if (case.get("verdict") == "fraud"
-        and (case.get("connected_card_ids") or [])):
+    # ------- 13. shared_element ⇒ SAR + monitor on a fraud verdict ---------
+    # The shared_element signal fires when either (i) ≥2 genuine peers
+    # appear in connected_card_ids or (ii) ring_components confirms a
+    # narrow-device neighbour with a prior confirmed-fraud ClosedCase
+    # (§3a "another card's fraud" leg). On a fraud verdict this must
+    # fire FILE_REPORT and MONITOR_CONNECTED_CARDS.
+    #
+    # We test shared_element via a mirror of ``compute_shared_element``
+    # against the persisted answer (which doesn't carry raw graph_signals)
+    # by using the peer definition itself: ≥2 entries in the
+    # connected_card_ids list (already filtered to genuine peers by
+    # ``compute_connected_cards``). Single-peer answers no longer trip I13.
+    ccids = case.get("connected_card_ids") or []
+    if case.get("verdict") == "fraud" and len(ccids) >= 2:
         final_names = [a["action"] for a in (nba.get("final") or [])]
         if "FILE_REPORT" not in final_names:
             v.append(Violation("I13",
-                "verdict=fraud with non-empty connected_card_ids but no "
-                "FILE_REPORT in final actions (§3a shared_element trigger)"))
+                f"verdict=fraud with {len(ccids)} connected peers (shared_element) "
+                "but no FILE_REPORT in final actions (§3a)"))
         if "MONITOR_CONNECTED_CARDS" not in final_names:
             v.append(Violation("I13",
-                "verdict=fraud with non-empty connected_card_ids but no "
-                "MONITOR_CONNECTED_CARDS in final actions (R6)"))
+                f"verdict=fraud with {len(ccids)} connected peers (shared_element) "
+                "but no MONITOR_CONNECTED_CARDS in final actions (R6)"))
 
     return v

@@ -1050,24 +1050,17 @@ def node_critic(state: AgentState) -> AgentState:
 
 
 def _shared_element_from_signals(state: AgentState) -> Optional[str]:
-    """shared_element = "device" iff:
+    """shared_element via the same helper the answer file uses so I13
+    stays consistent — see ``compute_shared_element`` for the rules.
 
-      - T2 fires (device_has_prior_fraud_cc AND this txn is proxied), OR
-      - ≥2 OTHER in-window cards on the device have attached fraud cases, OR
-      - the answer's ``connected_card_ids`` will be non-empty (any ring peer,
-        device_neighbor peer, region_cluster peer, or closed_case memory hit
-        with a card_id). Widening added to satisfy invariant I13:
-        connected_card_ids non-empty ⇒ shared_element set ⇒ (fraud ⇒
-        FILE_REPORT + MONITOR_CONNECTED_CARDS).
-
-    "region" / "recipient" require ≥2 OTHER cards in the corresponding
-    cluster query. Hub cap 100 applies to device only. Returns None when
-    the flagged txn has no device_profile AND no other shared_element
-    signal fires.
+    The rest of the function (below) is kept as a legacy fallback but
+    should never fire in practice: ``compute_shared_element`` is a
+    strict superset of the older device-tier and cluster checks.
     """
-    from sentinel.output.answer_file import compute_connected_cards
-    if compute_connected_cards(state):
-        return "device"
+    from sentinel.output.answer_file import compute_shared_element
+    se = compute_shared_element(state)
+    if se is not None:
+        return se
     row = state.get("txn_row", {})
     if not row.get("device_profile"):
         # No device — device-based shared_element cannot be attributed.

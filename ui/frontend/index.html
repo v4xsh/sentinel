@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentinel — Fraud Investigation Console</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Sentinel <span class="tag">Console</span></div>
+    <nav id="views">
+      <button data-view="cases"     class="active">Cases</button>
+      <button data-view="detail"    disabled>Case detail</button>
+      <button data-view="ledger"    disabled>Evidence</button>
+      <button data-view="timeline"  disabled>Timeline</button>
+      <button data-view="actions"   disabled>Actions</button>
+      <button data-view="sar"       disabled>SAR</button>
+      <button data-view="graph"     disabled>Graph</button>
+      <button data-view="backtest">Backtest</button>
+      <button data-view="memory">Memory</button>
+      <button data-view="monitor">Monitor</button>
+      <button data-view="findings">Findings</button>
+    </nav>
+  </header>
+  <main>
+    <section id="view-cases" class="view active">
+      <h2>Investigation cases</h2>
+      <div id="cases-list">Loading…</div>
+    </section>
+    <section id="view-detail" class="view">
+      <h2 id="detail-title">Case detail</h2>
+      <div class="two-col">
+        <div><pre id="case-detail-body">Select a case.</pre></div>
+        <div>
+          <h3>Investigation status</h3>
+          <div id="case-status"></div>
+          <h3>Trigger</h3>
+          <p id="case-trigger" class="muted"></p>
+        </div>
+      </div>
+    </section>
+    <section id="view-ledger" class="view">
+      <h2>Evidence</h2>
+      <div id="p-trajectory"></div>
+      <h3>Ledger</h3>
+      <table id="ledger-table">
+        <thead><tr><th>source</th><th>ref (coef)</th><th>claim</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <section id="view-timeline" class="view">
+      <h2>Investigation timeline</h2>
+      <pre id="timeline-body">—</pre>
+    </section>
+    <section id="view-actions" class="view">
+      <h2>Actions <span id="whatif-badge"></span></h2>
+      <div class="two-col">
+        <div>
+          <h3>Initial <span class="muted">(before evidence request)</span></h3>
+          <ul id="actions-initial"></ul>
+        </div>
+        <div>
+          <h3>Final <span class="muted">(after evidence request)</span></h3>
+          <ul id="actions-final"></ul>
+        </div>
+      </div>
+      <p id="what-changed" class="muted"></p>
+      <h3>What-if: swap the customer response</h3>
+      <div class="whatif-row">
+        <button data-resp="denied">If customer denied</button>
+        <button data-resp="confirmed">If customer confirmed</button>
+        <button data-resp="no_reply">If no reply</button>
+      </div>
+      <pre id="whatif-body" class="muted">Click a button to re-run the policy engine.</pre>
+    </section>
+    <section id="view-sar" class="view">
+      <h2>SAR narrative</h2>
+      <div id="sar-body"></div>
+    </section>
+    <section id="view-graph" class="view">
+      <h2>Graph neighbourhood</h2>
+      <div id="graph-container"></div>
+    </section>
+    <section id="view-backtest" class="view">
+      <h2>Backtest report</h2>
+      <div id="backtest-body">Loading…</div>
+    </section>
+    <section id="view-memory" class="view">
+      <h2>SentinelCase memory</h2>
+      <div id="memory-body">Loading…</div>
+    </section>
+    <section id="view-monitor" class="view">
+      <h2>Monitoring — extra alerts (Innovation)</h2>
+      <div id="monitor-body">Loading…</div>
+    </section>
+    <section id="view-findings" class="view">
+      <h2>Undocumented findings (Innovation)</h2>
+      <div id="findings-body">Loading…</div>
+    </section>
+  </main>
+  <script src="./app.js" defer></script>
+</body>
+</html>

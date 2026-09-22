@@ -32,3 +32,4 @@ backtest/oot/
 # Private working notes (JUDGE_REVIEW iterations, CHECKPOINT drafts,
 # phase0..phase3 diagnostic scripts) — never pushed.
 private/
+cases_meta/

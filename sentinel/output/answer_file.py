@@ -155,12 +155,55 @@ def _status_from(verdict: str, sar_file: bool, escalate: bool) -> str:
 
 
 def _evidence_json(ledger: EvidenceLedger) -> list[EvidenceEntry]:
+    """Return the analyst-readable subset of the ledger for the answer file.
+
+    - Every graph-sourced item (installed queries, ring evidence, detectors,
+      policy-fallback rows) is kept.
+    - Alert-model items are kept only when the absolute coefficient (weight
+      encoded in the ``ref`` string like ``alert_model:NAME  (weight ±X.XXX)``)
+      is ≥ 0.5. Everything else (low-weight features, intercept, raw
+      diagnostics) belongs in the cases_meta sidecar, not the analyst view.
+    """
+    import re as _re
+    W_RE = _re.compile(r"weight\s*([+\-]?\d+(?:\.\d+)?)")
     out: list[EvidenceEntry] = []
     for e in ledger.items:
+        ref = e.ref or ""
+        is_alert_model = ref.startswith("alert_model:")
+        if is_alert_model:
+            m = W_RE.search(ref)
+            weight = float(m.group(1)) if m else 0.0
+            if abs(weight) < 0.5:
+                continue  # relegated to model_diagnostics sidecar
         out.append(EvidenceEntry(
             claim=e.claim, source=e.source, ref=e.ref,
             entity_ids=[str(x) for x in e.entity_ids],
         ))
+    return out
+
+
+def _model_diagnostics(ledger: EvidenceLedger) -> list[dict]:
+    """Return every alert_model ledger item as a diagnostics sidecar row.
+
+    Written to cases_meta/<case_id>.json — NOT into the answer file.
+    Each row: {name, weight, direction, channel, claim}.
+    """
+    import re as _re
+    W_RE = _re.compile(r"weight\s*([+\-]?\d+(?:\.\d+)?)")
+    N_RE = _re.compile(r"alert_model:([^\s]+)")
+    out: list[dict] = []
+    for e in ledger.items:
+        if not (e.ref or "").startswith("alert_model:"):
+            continue
+        m_w = W_RE.search(e.ref)
+        m_n = N_RE.search(e.ref)
+        out.append({
+            "feature":   m_n.group(1) if m_n else "",
+            "weight":    float(m_w.group(1)) if m_w else 0.0,
+            "channel":   e.channel,
+            "direction": e.direction,
+            "claim":     e.claim,
+        })
     return out
 
 
@@ -481,10 +524,40 @@ def _compose_stop_reason(state: dict) -> str:
 
 
 def write_answer_file(state: dict, out_dir: Path | None = None) -> Path:
-    """Serialise + write ``cases/<case_id>.json``."""
+    """Serialise + write ``cases/<case_id>.json`` and the diagnostics sidecar.
+
+    The answer file itself carries only analyst-readable content. Every
+    low-weight alert-model item and pre-clamp probability trace lands in
+    ``cases_meta/<case_id>.json`` — never in the answer file schema.
+    """
     out_dir = out_dir or (REPO_ROOT / "cases")
     out_dir.mkdir(parents=True, exist_ok=True)
     answer = build_answer_file(state)
     path = out_dir / f"{answer['case_id']}.json"
     path.write_text(json.dumps(answer, indent=2), encoding="utf-8")
+
+    # Diagnostics sidecar — everything an engineer would want that the
+    # analyst UI doesn't need.
+    meta_dir = out_dir.parent / "cases_meta" \
+               if out_dir.name in ("cases", "cases_extra") \
+               else out_dir / "cases_meta"
+    meta_dir.mkdir(parents=True, exist_ok=True)
+    ledger = state.get("ledger")
+    meta = {
+        "case_id": answer["case_id"],
+        "p_initial": state.get("p_initial"),
+        "p_final":   answer["case"]["fraud_probability"],
+        "verdict":   answer["case"]["verdict"],
+        "pattern":   answer["case"]["pattern"],
+        "shared_element": state.get("shared_element"),
+        "alert_model_features_fired": state.get("alert_model_features_fired") or [],
+        "model_diagnostics": _model_diagnostics(ledger) if ledger is not None else [],
+        "llm_provider": state.get("llm_provider"),
+        "llm_model":    state.get("llm_model"),
+        "tool_calls":   answer.get("tool_calls"),
+        "latency_s":    answer.get("latency_s"),
+    }
+    (meta_dir / f"{answer['case_id']}.json").write_text(
+        json.dumps(meta, indent=2, default=str), encoding="utf-8"
+    )
     return path

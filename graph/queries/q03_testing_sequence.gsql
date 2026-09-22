@@ -1,0 +1,26 @@
+CREATE OR REPLACE QUERY testing_sequence(
+  VERTEX<PaymentCard> p_card,
+  DATETIME p_window_start,
+  DATETIME p_window_end
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  SumAccum<INT> @@n_small;
+  SumAccum<INT> @@n_larger;
+  ListAccum<VERTEX<Transaction>> @@small;
+  ListAccum<VERTEX<Transaction>> @@larger;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.channel == "online"
+      AND  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM
+      IF t.amt < 5.0  THEN @@n_small  += 1, @@small  += t
+      ELSE IF t.amt > 100.0 THEN @@n_larger += 1, @@larger += t
+      END;
+
+  BOOL fires = (@@n_small >= 3 AND @@n_larger >= 1);
+  PRINT @@n_small, @@n_larger, fires, @@small AS small_auths, @@larger AS larger_purchases;
+}
+INSTALL QUERY testing_sequence

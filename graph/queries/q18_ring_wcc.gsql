@@ -1,0 +1,88 @@
+// q18: ring_wcc — weakly-connected component of the card–device projection
+// containing the seed PaymentCard.
+//
+// We treat KNOWN_DEVICE (PaymentCard ↔ DeviceProfile) as the edge set,
+// prune devices whose degree exceeds ``p_degree_cap`` (default 100) to
+// keep hub devices (public wifi, disposable browsers) from collapsing
+// the whole population into one component, then BFS outward from the
+// seed card. The component_id is the seed's card_id (canonical label
+// since we start from one card).
+//
+// Returned:
+//   * component_id           — seed card id
+//   * size                   — number of PaymentCards in the component
+//   * iterations             — BFS rounds until fixed-point
+//   * component_exposure_usd — Σ amt for Transactions on component cards
+//                              in [p_window_start, p_window_end]
+//   * component_n_txns       — Σ 1 for those transactions
+//   * cards / devices        — component members (capped by degree)
+
+CREATE OR REPLACE QUERY ring_wcc(
+  VERTEX<PaymentCard> p_card,
+  DATETIME p_window_start,
+  DATETIME p_window_end,
+  INT      p_degree_cap = 100,
+  INT      p_max_iter   = 8
+) FOR GRAPH FraudGraph SYNTAX v2 {
+
+  SetAccum<VERTEX<PaymentCard>>    @@comp_cards;
+  SetAccum<VERTEX<DeviceProfile>>  @@comp_devs;
+  MapAccum<VERTEX<DeviceProfile>, SumAccum<INT>> @@dev_deg;
+  SumAccum<DOUBLE> @@exposure;
+  SumAccum<INT>    @@n_txns;
+  SumAccum<INT>    @@iterations;
+
+  Frontier = { p_card };
+  @@comp_cards += p_card;
+
+  WHILE Frontier.size() > 0 LIMIT p_max_iter DO
+    @@iterations += 1;
+
+    // 1. Cards → candidate devices (skip already-seen).
+    Cand =
+      SELECT d
+      FROM   Frontier:c -(KNOWN_DEVICE:e)- DeviceProfile:d
+      WHERE  NOT (d IN @@comp_devs);
+
+    // Compute each candidate device's total card-degree (for the cap).
+    Deg =
+      SELECT c
+      FROM   Cand:d -(KNOWN_DEVICE)- PaymentCard:c
+      ACCUM  @@dev_deg += (d -> 1);
+
+    // 2. Narrow candidates (degree ≤ cap) join the component.
+    Narrow =
+      SELECT d FROM Cand:d
+      WHERE  @@dev_deg.get(d) <= p_degree_cap
+      ACCUM  @@comp_devs += d;
+
+    // 3. New cards reachable through those narrow devices.
+    Frontier =
+      SELECT c
+      FROM   Narrow:d -(KNOWN_DEVICE:e)- PaymentCard:c
+      WHERE  NOT (c IN @@comp_cards)
+      ACCUM  @@comp_cards += c;
+  END;
+
+  // 4. In-window transaction exposure on the component's cards.
+  CompCards = { PaymentCard.* };
+  CompCards = SELECT c FROM CompCards:c WHERE c IN @@comp_cards;
+
+  RingTxns =
+    SELECT t
+    FROM   CompCards:c -(MADE>:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM  @@exposure += t.amt,
+           @@n_txns   += 1;
+
+  PRINT
+    p_card.card_id_display AS component_id,
+    @@comp_cards.size()  AS size,
+    @@comp_devs.size()   AS n_devices,
+    @@iterations,
+    @@exposure           AS component_exposure_usd,
+    @@n_txns             AS component_n_txns,
+    @@comp_cards         AS cards,
+    @@comp_devs          AS devices;
+}
+INSTALL QUERY ring_wcc

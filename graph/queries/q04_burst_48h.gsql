@@ -1,0 +1,22 @@
+CREATE OR REPLACE QUERY burst_48h(
+  VERTEX<PaymentCard> p_card,
+  DATETIME p_window_start,
+  DATETIME p_window_end
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  SumAccum<INT> @@n_online;
+  ListAccum<VERTEX<Transaction>> @@txns;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.channel == "online"
+      AND  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM
+      @@n_online += 1,
+      @@txns     += t;
+
+  PRINT @@n_online, @@txns AS txns;
+}
+INSTALL QUERY burst_48h

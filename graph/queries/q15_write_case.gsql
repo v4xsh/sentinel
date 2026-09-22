@@ -1,0 +1,44 @@
+CREATE OR REPLACE QUERY write_case(
+  STRING p_case_id,
+  STRING p_hhg_id,
+  VERTEX<PaymentCard> p_card,
+  VERTEX<Customer>    p_customer,
+  DATETIME p_opened_at,
+  STRING p_verdict,
+  STRING p_pattern,
+  DOUBLE p_fraud_probability,
+  DOUBLE p_exposure_usd,
+  STRING p_summary,
+  SET<VERTEX<Transaction>>   p_affected_txns,
+  SET<VERTEX<PaymentCard>>   p_connected_cards,
+  SET<VERTEX<DeviceProfile>> p_connected_devices,
+  SET<VERTEX<BillingRegion>> p_regions,
+  SET<VERTEX<ClosedCase>>    p_similar_closed
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  INSERT INTO SentinelCase VALUES (
+    p_case_id, p_hhg_id, p_opened_at, p_verdict, p_pattern,
+    p_fraud_probability, p_exposure_usd, p_summary
+  );
+
+  INSERT INTO C_ON_CARD     VALUES (p_case_id, p_card);
+  INSERT INTO C_ON_CUSTOMER VALUES (p_case_id, p_customer);
+
+  FOREACH t IN p_affected_txns DO
+    INSERT INTO C_INVOLVES VALUES (p_case_id, t);
+  END;
+  FOREACH c IN p_connected_cards DO
+    INSERT INTO C_CONNECTED_TO VALUES (p_case_id, c);
+  END;
+  FOREACH d IN p_connected_devices DO
+    INSERT INTO C_ON_DEVICE VALUES (p_case_id, d);
+  END;
+  FOREACH r IN p_regions DO
+    INSERT INTO C_IN_REGION VALUES (p_case_id, r);
+  END;
+  FOREACH s IN p_similar_closed DO
+    INSERT INTO C_SIMILAR_TO_CLOSED VALUES (p_case_id, s, 1.0);
+  END;
+
+  PRINT p_case_id AS written;
+}
+INSTALL QUERY write_case

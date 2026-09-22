@@ -1,0 +1,8 @@
+// Fetch a ClosedCase's notes_embedding for use as a seed query vector.
+// Uses ``PRINT ... WITH VECTOR`` which only works in an installed query.
+CREATE OR REPLACE QUERY get_cc_embedding(VERTEX<ClosedCase> p_case)
+    FOR GRAPH FraudGraph SYNTAX v2 {
+  Seed = { p_case };
+  PRINT Seed WITH VECTOR;
+}
+INSTALL QUERY get_cc_embedding

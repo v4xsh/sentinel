@@ -1,0 +1,19 @@
+CREATE OR REPLACE QUERY region_cluster(
+  VERTEX<BillingRegion> p_region,
+  DATETIME p_window_start,
+  DATETIME p_window_end
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  ListAccum<VERTEX<Transaction>> @@txns;
+
+  R = { p_region };
+
+  Txns =
+    SELECT t
+    FROM   R:r -(BILLED_IN:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM  @@txns += t;
+
+  // Cards are looked up in Python via the flagged transactions' card tuples.
+  PRINT @@txns.size() AS n_txns, @@txns AS txns_in_region_in_window;
+}
+INSTALL QUERY region_cluster

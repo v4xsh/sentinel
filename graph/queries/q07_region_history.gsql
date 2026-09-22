@@ -1,0 +1,38 @@
+CREATE OR REPLACE QUERY region_history(
+  VERTEX<PaymentCard> p_card,
+  VERTEX<BillingRegion> p_region,
+  DATETIME p_window_start,
+  DATETIME p_window_end
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  SumAccum<INT> @@n_in_region_ever;
+  SumAccum<INT> @@n_in_home_in_window;
+  SetAccum<STRING> @@home_regions;
+  STRING addr1_val;
+
+  R = { p_region };
+  Rv = SELECT r FROM R:r ACCUM addr1_val = r.addr1;
+
+  Seed = { p_card };
+
+  Home =
+    SELECT r
+    FROM   Seed:c -(HOME_REGION:e)- BillingRegion:r
+    ACCUM  @@home_regions += r.addr1;
+
+  T1 =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.addr1 == addr1_val
+    ACCUM  @@n_in_region_ever += 1;
+
+  T2 =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.channel == "in_person"
+      AND  t.ts >= p_window_start AND t.ts <= p_window_end
+      AND  (t.addr1 IN @@home_regions)
+    ACCUM  @@n_in_home_in_window += 1;
+
+  PRINT @@home_regions, @@n_in_region_ever, @@n_in_home_in_window;
+}
+INSTALL QUERY region_history

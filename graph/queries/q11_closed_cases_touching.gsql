@@ -1,0 +1,49 @@
+CREATE OR REPLACE QUERY closed_cases_touching(
+  VERTEX<PaymentCard>   p_card,
+  VERTEX<DeviceProfile> p_device,
+  VERTEX<BillingRegion> p_region,
+  DATETIME p_window_start,
+  DATETIME p_window_end,
+  INT p_region_degree_cap = 500
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  // Retrieve ClosedCases that share any of (card, device, region) with the
+  // subject. The region leg is windowed AND capped: we only consider Txns
+  // ``BILLED_IN`` the region *within* [window_start, window_end], and skip
+  // regions with more than p_region_degree_cap txns overall (region hubs).
+  SetAccum<VERTEX<ClosedCase>> @@cases;
+  SumAccum<INT>                @@n_region_txns;
+
+  // (a) same card.
+  Cards = { p_card };
+  ByCard =
+    SELECT cc FROM Cards:c -(CC_ON_CARD:e)- ClosedCase:cc
+    ACCUM  @@cases += cc;
+
+  // (b) same device profile.
+  Devs = { p_device };
+  ByDev =
+    SELECT cc FROM Devs:d -(CC_ON_DEVICE:e)- ClosedCase:cc
+    ACCUM  @@cases += cc;
+
+  // (c) same region, but only if:
+  //     - it isn't a mega-region (degree > cap over all time)
+  //     - and only txns in [window_start, window_end] count.
+  Regs = { p_region };
+  Regs =
+    SELECT r FROM Regs:r
+    WHERE  r.n_seen <= p_region_degree_cap;
+
+  Txns =
+    SELECT t
+    FROM   Regs:r -(BILLED_IN:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM  @@n_region_txns += 1;
+
+  ByReg =
+    SELECT cc
+    FROM   Txns:t -(CC_INVOLVES:e)- ClosedCase:cc
+    ACCUM  @@cases += cc;
+
+  PRINT @@cases AS cases, @@n_region_txns AS n_region_txns_in_window;
+}
+INSTALL QUERY closed_cases_touching

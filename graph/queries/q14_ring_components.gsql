@@ -1,0 +1,191 @@
+// q14: ring_components — v3.
+//
+// Adds:
+//   * ring_exposure_usd       — in-window txn total on ring devices +
+//                               closed-case exposure whose txn_ids touch
+//                               those devices (Ring behaviour today).
+//   * prior_fraud_exposure_usd — sum of confirmed_fraud ClosedCase.exposure_usd
+//                                for ClosedCases on the ring cards (v2's number).
+//   * p_expand_family          — when true, do one extra hop via
+//                                DeviceProfile.device_family, subject to the
+//                                same degree cap. This picks up minor
+//                                variants of the same device model (e.g. same
+//                                phone at a different screen resolution).
+//
+// Degree cap defaults 100. See distribution justification in DECISIONS.md.
+CREATE OR REPLACE QUERY ring_components(
+  VERTEX<PaymentCard> p_card,
+  DATETIME p_window_start,
+  DATETIME p_window_end,
+  INT     p_degree_cap = 100,
+  BOOL    p_expand_family = FALSE
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  // ---- accumulators -----------------------------------------------------
+  SetAccum<VERTEX<DeviceProfile>>  @@devices_used;
+  SetAccum<STRING>                 @@narrow_profs;
+  SetAccum<STRING>                 @@narrow_families;
+  MapAccum<VERTEX<DeviceProfile>, SumAccum<INT>> @@dev_ncards;
+  // Family-expansion accums (always declared; only populated when the flag is on).
+  SetAccum<VERTEX<DeviceProfile>>  @@family_devs;
+  MapAccum<STRING, SumAccum<INT>>  @@fam_ncards;
+
+  SetAccum<VERTEX<PaymentCard>>    @@ring_cards;
+  SetAccum<VERTEX<PaymentCard>>    @@new_device_cards;
+  SetAccum<VERTEX<PaymentCard>>    @@proxied_cards;
+
+  // (a) prior_fraud_exposure_usd — v2 buckets.
+  SumAccum<DOUBLE>                 @@prior_fraud_exposure_usd;
+  SumAccum<INT>                    @@n_closed_cases;
+
+  // (a) ring_exposure_usd — new.
+  SumAccum<DOUBLE>                 @@ring_txn_exposure_usd;
+  SumAccum<INT>                    @@n_ring_txns;
+  SumAccum<DOUBLE>                 @@ring_cc_exposure_usd;
+  SumAccum<INT>                    @@n_ring_cc;
+  SetAccum<VERTEX<ClosedCase>>     @@ring_cases;
+
+  // ---- 1. Devices the seed used in-window. -------------------------------
+  Seed = { p_card };
+  SeedTxns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end;
+
+  UsedDevs =
+    SELECT d
+    FROM   SeedTxns:t -(FROM_DEVICE:e)- DeviceProfile:d
+    ACCUM  @@devices_used += d;
+
+  // ---- 2. Card-degree per device (for cap). -----------------------------
+  AllDevs = { DeviceProfile.* };
+  AllDevs = SELECT d FROM AllDevs:d WHERE d IN @@devices_used;
+
+  DegEdges =
+    SELECT c
+    FROM   AllDevs:d -(KNOWN_DEVICE:e)- PaymentCard:c
+    ACCUM  @@dev_ncards += (d -> 1);
+
+  // ---- 3. Narrow (non-hub) devices — profile strings + families. --------
+  NarrowUsed =
+    SELECT d FROM AllDevs:d
+    ACCUM
+      IF @@dev_ncards.get(d) <= p_degree_cap THEN
+        @@narrow_profs    += d.profile,
+        @@narrow_families += d.device_family
+      END;
+
+  // ---- 3b. Family-expansion: bring in siblings sharing device_family. ---
+  //         Same degree-cap applied by re-computing per-family n_cards.
+  IF p_expand_family THEN
+    Cand = { DeviceProfile.* };
+    Cand =
+      SELECT d FROM Cand:d
+      WHERE  d.device_family IN @@narrow_families
+      ACCUM  @@family_devs += d;
+
+    FamEdges =
+      SELECT c
+      FROM   Cand:d -(KNOWN_DEVICE:e)- PaymentCard:c
+      ACCUM  @@fam_ncards += (d.device_family -> 1);
+
+    Prune =
+      SELECT d FROM Cand:d
+      ACCUM
+        IF @@fam_ncards.get(d.device_family) <= p_degree_cap THEN
+          @@narrow_profs += d.profile
+        END;
+  END;
+
+  // ---- 4. Ring cards = seed + all cards touching a narrow device. -------
+  Ring0 = SELECT c FROM Seed:c ACCUM @@ring_cards += c;
+
+  NarrowSet = { DeviceProfile.* };
+  NarrowSet = SELECT d FROM NarrowSet:d WHERE d.profile IN @@narrow_profs;
+
+  Ring1 =
+    SELECT c
+    FROM   NarrowSet:d -(KNOWN_DEVICE:e)- PaymentCard:c
+    ACCUM  @@ring_cards += c;
+
+  // 4b. Additionally follow CC_CONNECTED_TO from closed cases attached to
+  //     our narrow devices. This captures cards the analyst manually
+  //     attributed to the same ring — some ring members never touched the
+  //     shared device themselves (they were pulled in via IP/time signals).
+  DevCases =
+    SELECT cc
+    FROM   NarrowSet:d -(CC_ON_DEVICE:e)- ClosedCase:cc
+    WHERE  cc.outcome == "confirmed_fraud";
+
+  Ring2 =
+    SELECT c
+    FROM   DevCases:cc -(CC_CONNECTED_TO:e)- PaymentCard:c
+    ACCUM  @@ring_cards += c;
+
+  Ring3 =
+    SELECT c
+    FROM   DevCases:cc -(CC_ON_CARD:e)- PaymentCard:c
+    ACCUM  @@ring_cards += c;
+
+  // ---- 5. Bucket new-device / proxied cards + accumulate in-window
+  //         txn exposure on narrow devices. ---------------------------------
+  Ring = { PaymentCard.* };
+  Ring = SELECT c FROM Ring:c WHERE c IN @@ring_cards;
+
+  RingTxns =
+    SELECT t
+    FROM   Ring:c -(MADE>:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+      AND  (t.device_profile IN @@narrow_profs)
+    ACCUM
+      IF t.id_15 == "New"          THEN @@new_device_cards += c END,
+      IF t.id_23 LIKE "IP_PROXY:%" THEN @@proxied_cards     += c END,
+      @@ring_txn_exposure_usd += t.amt,
+      @@n_ring_txns           += 1;
+
+  // ---- 6. Prior-fraud exposure — v2 metric. -----------------------------
+  Cases =
+    SELECT cc
+    FROM   Ring:c -(CC_ON_CARD:e)- ClosedCase:cc
+    WHERE  cc.outcome == "confirmed_fraud"
+    ACCUM
+      @@prior_fraud_exposure_usd += cc.exposure_usd,
+      @@n_closed_cases           += 1;
+
+  // ---- 7. Ring-exposure closed-case leg: any ClosedCase whose txns are on
+  //         a narrow device. ------------------------------------------------
+  RingCases =
+    SELECT cc
+    FROM   NarrowSet:d -(CC_ON_DEVICE:e)- ClosedCase:cc
+    WHERE  cc.outcome == "confirmed_fraud"
+    ACCUM
+      @@ring_cases += cc;
+
+  // Deduplicate exposure per ClosedCase.
+  DedupCases = { ClosedCase.* };
+  DedupCases =
+    SELECT cc FROM DedupCases:cc
+    WHERE  cc IN @@ring_cases
+    ACCUM
+      @@ring_cc_exposure_usd += cc.exposure_usd,
+      @@n_ring_cc            += 1;
+
+  DOUBLE ring_exposure_usd = @@ring_txn_exposure_usd + @@ring_cc_exposure_usd;
+
+  PRINT
+    @@narrow_profs           AS narrow_devices,
+    @@ring_cards.size()      AS n_cards,
+    @@new_device_cards.size() AS n_new_device_cards,
+    @@proxied_cards.size()    AS n_proxied_cards,
+    @@n_closed_cases,
+    @@prior_fraud_exposure_usd,
+    @@n_ring_txns,
+    @@ring_txn_exposure_usd,
+    @@n_ring_cc,
+    @@ring_cc_exposure_usd,
+    ring_exposure_usd,
+    @@ring_cards        AS cards,
+    @@new_device_cards  AS new_device_cards,
+    @@proxied_cards     AS proxied_cards,
+    @@ring_cases        AS ring_closed_cases;
+}
+INSTALL QUERY ring_components

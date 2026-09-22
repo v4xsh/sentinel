@@ -1,0 +1,18 @@
+// q17: vector_search_cc — direct HNSW top-k over ClosedCase.notes_embedding.
+//
+// Called over REST rather than via the MCP tool wrapper, which adds ~30s of
+// serialization overhead per round-trip. This installed query invokes the
+// TG 4.x built-in ``vectorSearch()`` and typically returns in < 2 seconds
+// on the current ~5.6k ClosedCase population.
+CREATE OR REPLACE QUERY vector_search_cc(
+  LIST<FLOAT> p_query_vector,
+  INT p_top_k = 10
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  Cases = vectorSearch(
+    {ClosedCase.notes_embedding},
+    p_query_vector,
+    p_top_k
+  );
+  PRINT Cases;
+}
+INSTALL QUERY vector_search_cc

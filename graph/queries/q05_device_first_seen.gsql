@@ -1,0 +1,24 @@
+CREATE OR REPLACE QUERY device_first_seen(
+  VERTEX<PaymentCard>   p_card,
+  VERTEX<DeviceProfile> p_device
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  MinAccum<DATETIME> @@first_ts;
+  SumAccum<INT>      @@n_txns_on_device;
+  STRING dp_val;
+
+  D = { p_device };
+  Dv = SELECT d FROM D:d ACCUM dp_val = d.profile;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.device_profile == dp_val
+    ACCUM
+      @@first_ts        += t.ts,
+      @@n_txns_on_device += 1;
+
+  PRINT @@first_ts, @@n_txns_on_device;
+}
+INSTALL QUERY device_first_seen

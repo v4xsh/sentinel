@@ -1,0 +1,18 @@
+CREATE OR REPLACE QUERY recipient_email_cluster(
+  VERTEX<EmailDomain> p_domain,
+  DATETIME p_window_start,
+  DATETIME p_window_end
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  ListAccum<VERTEX<Transaction>> @@txns;
+
+  D = { p_domain };
+
+  Txns =
+    SELECT t
+    FROM   D:d -(RECIPIENT_EMAIL:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM  @@txns += t;
+
+  PRINT @@txns.size() AS n_txns, @@txns AS txns_to_recipient;
+}
+INSTALL QUERY recipient_email_cluster

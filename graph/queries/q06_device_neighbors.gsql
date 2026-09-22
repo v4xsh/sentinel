@@ -1,0 +1,55 @@
+CREATE OR REPLACE QUERY device_neighbors(
+  VERTEX<DeviceProfile> p_device,
+  DATETIME p_window_start,
+  DATETIME p_window_end,
+  INT p_degree_cap = 100
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  // Ring-friendly variant: skip device profiles above the degree cap (which
+  // are generic browser hubs, not real ring devices), and only count
+  // txns/cards that appear inside [window_start, window_end].
+  //
+  // Cards are also filtered to those that transacted on this device during
+  // the window — so historical (long-tail) card-device pairs don't inflate.
+  SetAccum<VERTEX<PaymentCard>> @@cards;
+  SetAccum<VERTEX<ClosedCase>>  @@closed_cases;
+  SumAccum<INT>                 @@n_txns_in_window;
+  SumAccum<INT>                 @@n_cards_all_time;
+
+  D0 = { p_device };
+
+  // Count cards ever seen on this device (for cap check).
+  AllPairs =
+    SELECT c FROM D0:d -(KNOWN_DEVICE:e)- PaymentCard:c
+    ACCUM  @@n_cards_all_time += 1;
+
+  D = { p_device };
+  D = SELECT d FROM D:d WHERE @@n_cards_all_time <= p_degree_cap;
+
+  // Txns on this device in the window.
+  Txns =
+    SELECT t
+    FROM   D:d -(FROM_DEVICE:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM  @@n_txns_in_window += 1;
+
+  // Cards attached to those in-window txns (via MADE from card side).
+  RingCards = { PaymentCard.* };
+  RingCards =
+    SELECT c
+    FROM   RingCards:c -(MADE>:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+      AND  t.device_profile == p_device.profile
+    ACCUM  @@cards += c;
+
+  // ClosedCases attached to this device (via CC_ON_DEVICE).
+  Cases =
+    SELECT cc FROM D:d -(CC_ON_DEVICE:e)- ClosedCase:cc
+    ACCUM  @@closed_cases += cc;
+
+  PRINT
+    @@n_cards_all_time AS n_cards_all_time,
+    @@n_txns_in_window AS n_txns_in_window,
+    @@cards            AS cards_in_window,
+    @@closed_cases     AS closed_cases_on_device;
+}
+INSTALL QUERY device_neighbors

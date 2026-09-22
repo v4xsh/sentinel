@@ -1,0 +1,179 @@
+// Sentinel — TigerGraph schema for FraudGraph.
+//
+// Design notes:
+//  - `PaymentCard.id` is a **tuple hash** (`customer_id|c2|c3|c4|c5|c6`) rather than the
+//    unreliable `-Kn` string; `card_id_display` carries the -Kn spelling for UI.
+//  - Transaction keeps ~25 attrs; the full 393-col Vesta feature set stays in
+//    Parquet. Only fields the agent actually reads at investigation time are on-graph.
+//  - Vector attributes go on ClosedCase, SentinelCase, PolicyChunk, RegDocChunk.
+//  - ClosedCase→ON_CUSTOMER→Customer added per user's Phase-2 addendum.
+//  - The pre-existing Transaction_Fraud demo graph on this workspace is left
+//    untouched (this schema declares its own vertices/edges globally where
+//    names are unique, and adds the FraudGraph as a fresh graph over them).
+
+USE GLOBAL
+
+// -------------------------- VERTICES --------------------------
+
+CREATE VERTEX Customer(
+    PRIMARY_ID id STRING,
+    first_ts DATETIME,
+    last_ts DATETIME,
+    n_cards INT DEFAULT 0
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+// PaymentCard.id is the tuple hash "customer_id|c2|c3|c4|c5|c6".
+CREATE VERTEX PaymentCard(
+    PRIMARY_ID id STRING,
+    customer_id STRING,
+    card_id_display STRING,     // e.g. "C12382-K1"
+    card1 INT,
+    card2 STRING,
+    card3 STRING,
+    card4 STRING,
+    card5 STRING,
+    card6 STRING,
+    first_ts DATETIME,
+    last_ts DATETIME,
+    n_txns INT DEFAULT 0
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+// Transaction — 25 attrs.
+CREATE VERTEX Transaction(
+    PRIMARY_ID id STRING,           // "T" + TransactionID as string
+    txn_int UINT,                   // numeric TransactionID
+    ts DATETIME,
+    amt DOUBLE,
+    ProductCD STRING,
+    channel STRING,
+    risk_score DOUBLE,
+    addr1 STRING,
+    addr2 STRING,
+    dist1 DOUBLE,
+    dist2 DOUBLE,
+    P_emaildomain STRING,
+    R_emaildomain STRING,
+    M1 STRING, M2 STRING, M3 STRING, M4 STRING, M5 STRING,
+    M6 STRING, M7 STRING, M8 STRING, M9 STRING,
+    id_15 STRING,                   // "New" / "Found"
+    id_23 STRING,                   // "IP_PROXY:*" or NULL
+    device_profile STRING           // DeviceInfo | OS | browser | screen
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX DeviceProfile(
+    PRIMARY_ID profile STRING,
+    DeviceInfo STRING,
+    os STRING,
+    browser STRING,
+    screen STRING,
+    proxy_hint STRING,              // last-seen id_23 value or ""
+    n_seen INT DEFAULT 0
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX EmailDomain(
+    PRIMARY_ID domain STRING
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX BillingRegion(
+    PRIMARY_ID addr1 STRING,
+    n_seen INT DEFAULT 0
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX ProductCode(
+    PRIMARY_ID code STRING
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX ClosedCase(
+    PRIMARY_ID case_id STRING,
+    customer_id STRING,
+    card_tuple_id STRING,           // matches PaymentCard.id
+    hist_card_id STRING,            // as-written in closed_cases_history.csv
+    opened_at DATETIME,
+    closed_at DATETIME,
+    outcome STRING,
+    pattern STRING,
+    first_fraud_txn_id STRING,
+    n_txns INT,
+    exposure_usd DOUBLE,
+    report_filed STRING,
+    analyst_notes STRING
+    // notes_embedding added via ALTER VERTEX ADD VECTOR ATTRIBUTE in install.py.
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX SentinelCase(
+    PRIMARY_ID case_id STRING,      // "CASE-2016-<seq>"
+    hhg_id STRING,                  // "HHG-014" or "" for monitoring cases
+    opened_at DATETIME,
+    verdict STRING,
+    pattern STRING,
+    fraud_probability DOUBLE,
+    exposure_usd DOUBLE,
+    summary STRING
+    // summary_embedding added via ALTER VERTEX ADD VECTOR ATTRIBUTE in install.py.
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX PolicyChunk(
+    PRIMARY_ID chunk_id STRING,
+    source STRING,                  // "README:policy", "README:patterns"
+    section STRING,                 // e.g. "R5" or "3a"
+    text STRING
+    // embedding added via ALTER VERTEX ADD VECTOR ATTRIBUTE in install.py.
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX RegDocChunk(
+    PRIMARY_ID chunk_id STRING,
+    source STRING,                  // FinCEN filename etc.
+    section STRING,
+    text STRING
+    // embedding added via ALTER VERTEX ADD VECTOR ATTRIBUTE in install.py.
+) WITH PRIMARY_ID_AS_ATTRIBUTE="true"
+
+// -------------------------- EDGES ----------------------------
+
+CREATE UNDIRECTED EDGE OWNS(FROM Customer, TO PaymentCard)
+CREATE DIRECTED   EDGE MADE(FROM PaymentCard, TO Transaction) WITH REVERSE_EDGE="MADE_BY"
+
+CREATE UNDIRECTED EDGE FROM_DEVICE(FROM Transaction, TO DeviceProfile)
+CREATE UNDIRECTED EDGE PURCHASER_EMAIL(FROM Transaction, TO EmailDomain)
+CREATE UNDIRECTED EDGE RECIPIENT_EMAIL(FROM Transaction, TO EmailDomain)
+CREATE UNDIRECTED EDGE BILLED_IN(FROM Transaction, TO BillingRegion)
+CREATE UNDIRECTED EDGE IN_PRODUCT(FROM Transaction, TO ProductCode)
+
+CREATE DIRECTED EDGE NEXT(FROM Transaction, TO Transaction, gap_secs UINT)
+    WITH REVERSE_EDGE="PREV"
+
+// PaymentCard-level shortcuts.
+CREATE UNDIRECTED EDGE HOME_REGION(FROM PaymentCard, TO BillingRegion, n_home UINT)
+CREATE UNDIRECTED EDGE KNOWN_DEVICE(FROM PaymentCard, TO DeviceProfile, n_seen UINT, first_seen DATETIME)
+
+// Closed-case linkage.
+CREATE UNDIRECTED EDGE CC_INVOLVES(FROM ClosedCase, TO Transaction)
+CREATE UNDIRECTED EDGE CC_ON_CARD(FROM ClosedCase, TO PaymentCard)
+CREATE UNDIRECTED EDGE CC_ON_CUSTOMER(FROM ClosedCase, TO Customer)
+CREATE UNDIRECTED EDGE CC_CONNECTED_TO(FROM ClosedCase, TO PaymentCard)
+CREATE UNDIRECTED EDGE CC_ON_DEVICE(FROM ClosedCase, TO DeviceProfile)
+
+// New-case (sentinel-produced) linkage.
+CREATE UNDIRECTED EDGE C_INVOLVES(FROM SentinelCase, TO Transaction)
+CREATE UNDIRECTED EDGE C_ON_CARD(FROM SentinelCase, TO PaymentCard)
+CREATE UNDIRECTED EDGE C_ON_CUSTOMER(FROM SentinelCase, TO Customer)
+CREATE UNDIRECTED EDGE C_CONNECTED_TO(FROM SentinelCase, TO PaymentCard)
+CREATE UNDIRECTED EDGE C_ON_DEVICE(FROM SentinelCase, TO DeviceProfile)
+CREATE UNDIRECTED EDGE C_IN_REGION(FROM SentinelCase, TO BillingRegion)
+CREATE UNDIRECTED EDGE C_SIMILAR_TO_CLOSED(FROM SentinelCase, TO ClosedCase, score DOUBLE)
+CREATE UNDIRECTED EDGE C_SIMILAR_TO_CASE(FROM SentinelCase, TO SentinelCase, score DOUBLE)
+
+// -------------------------- GRAPH ----------------------------
+
+CREATE GRAPH FraudGraph(
+    Customer, PaymentCard, Transaction,
+    DeviceProfile, EmailDomain, BillingRegion, ProductCode,
+    ClosedCase, SentinelCase, PolicyChunk, RegDocChunk,
+    OWNS, MADE, MADE_BY,
+    FROM_DEVICE, PURCHASER_EMAIL, RECIPIENT_EMAIL, BILLED_IN, IN_PRODUCT,
+    NEXT, PREV,
+    HOME_REGION, KNOWN_DEVICE,
+    CC_INVOLVES, CC_ON_CARD, CC_ON_CUSTOMER, CC_CONNECTED_TO, CC_ON_DEVICE,
+    C_INVOLVES, C_ON_CARD, C_ON_CUSTOMER, C_CONNECTED_TO, C_ON_DEVICE,
+    C_IN_REGION, C_SIMILAR_TO_CLOSED, C_SIMILAR_TO_CASE
+)

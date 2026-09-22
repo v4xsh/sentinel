@@ -1,0 +1,18 @@
+CREATE OR REPLACE QUERY card_window(
+  VERTEX<PaymentCard> p_card,
+  DATETIME p_window_start,
+  DATETIME p_window_end
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  ListAccum<VERTEX<Transaction>> @@txns;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.ts >= p_window_start AND t.ts <= p_window_end
+    ACCUM  @@txns += t;
+
+  PRINT Txns;
+}
+INSTALL QUERY card_window

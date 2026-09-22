@@ -1,0 +1,92 @@
+CREATE OR REPLACE QUERY recurring_match(
+  VERTEX<PaymentCard> p_card,
+  STRING p_product_cd,
+  DOUBLE p_amount,
+  DOUBLE p_tolerance_cents = 0.02,
+  INT    p_min_days_apart = 20
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  // Enriched R7 check: on top of the boolean "fires", return
+  //   - span_secs and first/last ts
+  //   - n_distinct_addr1  (how many regions the hits span)
+  //   - cadence_cv         (coefficient of variation of inter-hit gaps)
+  //   - n_missed_slots     (expected monthly slots minus observed hits)
+  TYPEDEF TUPLE<DOUBLE e> Slot;
+  HeapAccum<Slot>(10000, e ASC)  @@sorted;
+  ListAccum<VERTEX<Transaction>> @@hits;
+  SetAccum<STRING>                @@regions_hit;
+  MinAccum<DATETIME>              @@first_ts;
+  MaxAccum<DATETIME>              @@last_ts;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.ProductCD == p_product_cd
+      AND  abs(t.amt - p_amount) <= p_tolerance_cents + 0.0001
+    ACCUM
+      @@hits        += t,
+      @@sorted      += Slot(datetime_to_epoch(t.ts) * 1.0),
+      @@regions_hit += t.addr1,
+      @@first_ts    += t.ts,
+      @@last_ts     += t.ts;
+
+  INT n = @@hits.size();
+  INT span_secs = 0;
+  DOUBLE cadence_cv = -1.0;                 // -1 = not enough hits
+  INT expected_slots = 0;
+  INT n_missed_slots = 0;
+
+  IF n >= 2 THEN
+    span_secs = datetime_diff(@@last_ts, @@first_ts);
+
+    // Pass 1: mean gap.
+    DOUBLE prev_e   = -1.0;
+    DOUBLE gap_sum  = 0.0;
+    INT    n_gaps   = 0;
+    FOREACH s IN @@sorted DO
+      IF prev_e >= 0 THEN
+        gap_sum = gap_sum + (s.e - prev_e);
+        n_gaps  = n_gaps + 1;
+      END;
+      prev_e = s.e;
+    END;
+    DOUBLE gap_mean = 0.0;
+    IF n_gaps > 0 THEN gap_mean = gap_sum / n_gaps; END;
+
+    // Pass 2: variance -> stdev -> CV.
+    DOUBLE prev_e2  = -1.0;
+    DOUBLE var_sum  = 0.0;
+    FOREACH s IN @@sorted DO
+      IF prev_e2 >= 0 THEN
+        DOUBLE d = (s.e - prev_e2) - gap_mean;
+        var_sum = var_sum + d * d;
+      END;
+      prev_e2 = s.e;
+    END;
+    IF n_gaps > 0 AND gap_mean > 0 THEN
+      DOUBLE sd = sqrt(var_sum / n_gaps);
+      cadence_cv = sd / gap_mean;
+    END;
+
+    expected_slots  = span_secs / 2629800;   // 30.44 * 86400 secs per average month
+    n_missed_slots  = expected_slots + 1 - n;
+    IF n_missed_slots < 0 THEN n_missed_slots = 0; END;
+  END;
+
+  BOOL fires = (n >= 2 AND span_secs >= p_min_days_apart * 86400);
+
+  PRINT
+    n,
+    fires,
+    span_secs,
+    @@first_ts,
+    @@last_ts,
+    @@regions_hit.size() AS n_distinct_addr1,
+    @@regions_hit         AS regions_hit,
+    cadence_cv,
+    n_missed_slots,
+    expected_slots,
+    @@hits AS matches;
+}
+INSTALL QUERY recurring_match

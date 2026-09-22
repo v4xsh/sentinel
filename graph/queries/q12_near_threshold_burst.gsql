@@ -1,0 +1,25 @@
+CREATE OR REPLACE QUERY near_threshold_burst(
+  VERTEX<PaymentCard> p_card,
+  DATETIME p_window_start,
+  DATETIME p_window_end,
+  DOUBLE p_threshold = 500.0,
+  INT p_min_count = 3
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  ListAccum<VERTEX<Transaction>> @@hits;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    WHERE  t.channel == "online"
+      AND  t.ts >= p_window_start AND t.ts <= p_window_end
+      AND  t.amt < p_threshold
+      AND  t.amt >= p_threshold * 0.95
+    ACCUM  @@hits += t;
+
+  INT n = @@hits.size();
+  BOOL fires = (n >= p_min_count);
+  PRINT n, fires, p_threshold, @@hits AS hits;
+}
+INSTALL QUERY near_threshold_burst

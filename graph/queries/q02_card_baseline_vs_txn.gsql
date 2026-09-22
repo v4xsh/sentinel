@@ -1,0 +1,30 @@
+CREATE OR REPLACE QUERY card_baseline_vs_txn(
+  VERTEX<PaymentCard> p_card,
+  VERTEX<Transaction> p_txn
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  SumAccum<INT>    @@n_txns;
+  SumAccum<INT>    @@n_online;
+  SetAccum<STRING> @@regions;
+  SetAccum<STRING> @@products;
+  SetAccum<STRING> @@devices;
+  SetAccum<STRING> @@p_emails;
+
+  Seed = { p_card };
+
+  Txns =
+    SELECT t
+    FROM   Seed:c -(MADE>:e)- Transaction:t
+    ACCUM
+      @@n_txns   += 1,
+      @@n_online += (CASE WHEN t.channel == "online" THEN 1 ELSE 0 END),
+      @@regions  += t.addr1,
+      @@products += t.ProductCD,
+      @@devices  += t.device_profile,
+      @@p_emails += t.P_emaildomain;
+
+  Flagged = { p_txn };
+
+  PRINT @@n_txns, @@n_online, @@regions, @@products, @@devices, @@p_emails;
+  PRINT Flagged;
+}
+INSTALL QUERY card_baseline_vs_txn

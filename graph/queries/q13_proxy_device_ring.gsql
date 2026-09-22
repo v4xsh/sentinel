@@ -1,0 +1,77 @@
+CREATE OR REPLACE QUERY proxy_device_ring(
+  DATETIME p_window_start,
+  DATETIME p_window_end,
+  INT p_min_cards = 3,
+  INT p_degree_cap = 100
+) FOR GRAPH FraudGraph SYNTAX v2 {
+  // Find (DeviceProfile, {PaymentCards}) rings where:
+  //   - at least one FROM_DEVICE txn in [window_start, window_end] carried
+  //     id_23 like 'IP_PROXY:%',
+  //   - the device isn't a hub (its all-time card degree <= p_degree_cap),
+  //   - and the set of distinct cards touching the device inside the window
+  //     is >= p_min_cards.
+  //
+  // Two accumulators drive the answer:
+  //   @@cards_per_dev  — device -> set of cards seen in-window on this device
+  //   @@dev_alltime    — device -> total card count (undecorated) for the cap.
+  GroupByAccum<VERTEX<DeviceProfile> dev, SetAccum<VERTEX<PaymentCard>> cards> @@cards_per_dev;
+  MapAccum<VERTEX<DeviceProfile>, SumAccum<INT>> @@dev_alltime;
+  SetAccum<VERTEX<DeviceProfile>> @@candidate_devs;
+
+  // 1) In-window proxied txns → their DeviceProfile becomes a candidate.
+  ProxTxns = { Transaction.* };
+  ProxTxns =
+    SELECT t FROM ProxTxns:t
+    WHERE  t.id_23 LIKE "IP_PROXY:%"
+      AND  t.ts >= p_window_start
+      AND  t.ts <= p_window_end
+      AND  t.device_profile != "";
+
+  Candidates =
+    SELECT d
+    FROM   ProxTxns:t -(FROM_DEVICE:e)- DeviceProfile:d
+    ACCUM  @@candidate_devs += d;
+
+  // 2) For those candidates, all-time card degree (for the cap).
+  AllDevs = { DeviceProfile.* };
+  AllDevs = SELECT d FROM AllDevs:d WHERE d IN @@candidate_devs;
+  DegEdges =
+    SELECT c
+    FROM   AllDevs:d -(KNOWN_DEVICE:e)- PaymentCard:c
+    ACCUM  @@dev_alltime += (d -> 1);
+
+  // 3) Cards that transacted on the candidate device in the window.
+  //    (Traverse via the txn: card -> MADE -> Transaction whose device
+  //    profile matches, and ts is in-window.)
+  //    First collect candidate profile strings.
+  SetAccum<STRING> @@cand_profs;
+  Marks =
+    SELECT d FROM AllDevs:d
+    ACCUM  IF @@dev_alltime.get(d) <= p_degree_cap THEN @@cand_profs += d.profile END;
+
+  Cards = { PaymentCard.* };
+  Cards =
+    SELECT c
+    FROM   Cards:c -(MADE>:e)- Transaction:t -(FROM_DEVICE:e2)- DeviceProfile:d
+    WHERE  t.ts >= p_window_start
+      AND  t.ts <= p_window_end
+      AND  (t.device_profile IN @@cand_profs)
+      AND  (d.profile IN @@cand_profs)
+    ACCUM  @@cards_per_dev += (d -> c);
+
+  // 4) Emit only rings with >= p_min_cards.
+  //    (GroupByAccum keeps all keys; caller can filter, but we hint via a
+  //    scalar accumulator that reports how many rings pass the threshold.)
+  SumAccum<INT> @@n_rings_over_threshold;
+  FOREACH row IN @@cards_per_dev DO
+    IF row.cards.size() >= p_min_cards THEN
+      @@n_rings_over_threshold += 1;
+    END;
+  END;
+
+  PRINT @@cards_per_dev AS proxy_rings,
+        @@n_rings_over_threshold,
+        @@candidate_devs.size() AS n_candidate_devices,
+        @@cand_profs.size() AS n_narrow_devices;
+}
+INSTALL QUERY proxy_device_ring

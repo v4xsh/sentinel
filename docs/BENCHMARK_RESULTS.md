@@ -1,6 +1,8 @@
 # 20-case benchmark — results
 
-Every case ran end-to-end through the LangGraph agent with all graph tool calls dispatched through the shared TigerGraph MCP session (see `docs/MCP_TRANSCRIPT_HHG-014.md` for the captured tool-call log). Alert-model coefficients from `sentinel/evidence/alert_model.json` (L2 logistic, 5-fold CV AUC 0.9465). Each SentinelCase was written back to the graph via the `write_case` installed query.
+Every case ran end-to-end through the LangGraph agent with all graph tool calls dispatched through the shared TigerGraph MCP session (see `docs/MCP_TRANSCRIPT_HHG-014.md` for the captured tool-call log). Alert-model coefficients from `sentinel/evidence/alert_model.json` (L2 logistic, 5-fold CV **AUC 0.9465, Brier 0.0927**). **Out-of-time evaluation** — train on Jul–Sep 2016, test on Oct+ 2016 (n=75 held-out eval, `--oot` protocol) — reproduces the CV estimate almost exactly: **AUC 0.9431, Brier 0.0804**. Each SentinelCase was written back to the graph via the `write_case` installed query.
+
+**Oracle-mode caveat.** The 150-case oracle backtest hits 1.000 verdict accuracy *by construction*: `sentinel.backtest.run::_oracle_response` derives `customer_response` from the historical `actions_taken` label, which then determines the verdict via §6. Oracle accuracy is a policy-engine correctness check, not a model accuracy claim. The honest end-to-end evaluations are the simulated backtest (τ=0.30, verdict acc **0.833**) and the OOT AUC above.
 
 ## Summary
 

@@ -20,7 +20,7 @@ hallucinate, and we contained it.
 | Alert-model 5-fold CV | **AUC 0.9465 ± 0.0046,  Brier 0.0927** |
 | Simulated backtest verdict accuracy (n=150, τ=0.30, 75 tune / 75 eval) | **0.833** |
 | Oracle backtest verdict accuracy (n=150) | **1.000** — see caveat† |
-| Out-of-time evaluation (train Jul–Sep, test Oct+) | *running — updated before submission* |
+| **Out-of-time AUC** (train Jul–Sep 2016, test Oct+ 2016; n=75 tune / 75 held-out eval, p_initial from the dry pass) | **AUC 0.9431, Brier 0.0804** on the eval half |
 | FinCEN §3a policy encoding: SAR-decision replay | **4,665 / 4,665** confirmed-fraud rows (rule-encoding test) |
 | Mean latency per case (shared MCP session, LLM on) | **~5 s** |
 | Mean latency per case (REST fast-path, LLM off, backtest) | **2.5 s** |

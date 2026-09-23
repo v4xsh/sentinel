@@ -34,7 +34,7 @@ deterministic policy engine decides actions.
 | Alert model 5-fold CV | **AUC 0.9465 ± 0.0046,  Brier 0.0927** |
 | Simulated backtest (n=150, τ=0.30) | **verdict acc 0.833** |
 | Oracle backtest (n=150) | **verdict acc 1.000** — by construction; `customer_response` is derived from the historical `actions_taken` label. Use the simulated number and the OOT AUC as the honest end-to-end evaluations. |
-| OOT AUC (train Jul–Sep 2016, test Oct+) | *running — updated before submission* |
+| OOT AUC (train Jul–Sep 2016, test Oct+; n=75 held-out eval) | **AUC 0.9431, Brier 0.0804** |
 | §3a policy encoding: SAR-decision replay | **4,665 / 4,665** confirmed-fraud rows |
 | SentinelCase vertices in graph | **35** (20 benchmark + 15 monitoring) |
 | Installed GSQL queries | **18** |

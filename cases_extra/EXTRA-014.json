@@ -3,33 +3,33 @@
   "case": {
     "status": "closed_fraud",
     "verdict": "fraud",
-    "fraud_probability": 0.9777,
-    "pattern": "account_takeover",
+    "fraud_probability": 0.9535,
+    "pattern": "card_not_present_fraud",
     "pattern_description": "",
     "affected_txn_ids": [
-      "3528137"
+      "3526069"
     ],
-    "first_suspicious_txn_id": "3528137",
-    "connected_card_ids": [
-      "C03738|_|_|_|_|_"
+    "first_suspicious_txn_id": "3526069",
+    "connected_card_ids": [],
+    "connected_device_profiles": [
+      "iOS Device | iOS 11.3.0 | mobile safari generic | 2208x1242"
     ],
-    "connected_device_profiles": [],
-    "exposure_usd": 58.97,
+    "exposure_usd": 199.99,
     "evidence": [
       {
-        "claim": "ATO shape: mixed-channel activity in 24h  (n_online in \u00b148h = 3).",
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 1 cards across 0 narrow devices after 1 iterations, $200 in-window transaction volume.",
         "source": "graph",
-        "ref": "conjunctive-lr:ato \u00b148h + mixed_channel_last_24h",
+        "ref": "query:ring_wcc",
         "entity_ids": [
-          "3528137"
+          "3526069"
         ]
       },
       {
-        "claim": "This card tuple has \u22651 prior confirmed_fraud case closed before this txn.",
+        "claim": "Device family has KNOWN_DEVICE degree=128 (>100 hub cap). Ring-component signal suppressed.",
         "source": "graph",
-        "ref": "signal:prior_fraud_on_card_tuple",
+        "ref": "query:ring_components  |  hub_cap_100",
         "entity_ids": [
-          "C03738-K1"
+          "3526069"
         ]
       },
       {
@@ -37,39 +37,7 @@
         "source": "graph",
         "ref": "alert_model:__intercept__  (weight +2.646)",
         "entity_ids": [
-          "3528137"
-        ]
-      },
-      {
-        "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
-        "source": "graph",
-        "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
-        "entity_ids": [
-          "3528137"
-        ]
-      },
-      {
-        "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
-        "source": "graph",
-        "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
-        "entity_ids": [
-          "3528137"
-        ]
-      },
-      {
-        "claim": "The card had both online and in-person activity in the 24 hours before this transaction (weight -0.22).",
-        "source": "graph",
-        "ref": "alert_model:mixed_channel_last_24h  (weight -0.220)",
-        "entity_ids": [
-          "3528137"
-        ]
-      },
-      {
-        "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
-        "source": "graph",
-        "ref": "alert_model:recurring_ge3  (weight +0.679)",
-        "entity_ids": [
-          "3528137"
+          "3526069"
         ]
       },
       {
@@ -77,15 +45,15 @@
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
         "entity_ids": [
-          "3528137"
+          "3526069"
         ]
       },
       {
-        "claim": "Alerted transaction is on the in-person / card-present channel (weight +1.57).",
+        "claim": "Alerted transaction is on the online channel (weight +2.72).",
         "source": "graph",
-        "ref": "alert_model:channel_in_person  (weight +1.574)",
+        "ref": "alert_model:channel_online  (weight +2.715)",
         "entity_ids": [
-          "3528137"
+          "3526069"
         ]
       },
       {
@@ -95,11 +63,11 @@
         "entity_ids": []
       },
       {
-        "claim": "Posterior before customer contact: 0.832.",
+        "claim": "Pattern assigned by channel rule: online activity inconsistent with the cardholder's history and no more specific typology matched (README pattern 2).",
         "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
+        "ref": "c6v3-pf:channel_rule",
         "entity_ids": [
-          "3528137"
+          "3526069"
         ]
       }
     ],
@@ -138,25 +106,20 @@
         "action": "CREATE_CASE",
         "route": "auto",
         "reason": "R2: customer denied"
-      },
-      {
-        "action": "BLOCK_ALL_CARDS",
-        "route": "L2",
-        "reason": "R10: at least two of this customer's cards show confirmed fraud OR credentials confirmed compromised"
       }
     ],
-    "what_changed": "added: BLOCK_CARD, BLOCK_ALL_CARDS; removed: VERIFY_WITH_CUSTOMER"
+    "what_changed": "added: BLOCK_CARD; removed: VERIFY_WITH_CUSTOMER"
   },
   "sar": {
     "file": false,
-    "reason": "\u00a73a: SAR not required \u2014 exposure $58.97 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "reason": "\u00a73a: SAR not required \u2014 exposure $199.99 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
     "narrative": "",
     "subjects": [],
     "total_amount_usd": 0.0,
     "activity_dates": []
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
-  "tool_calls": 11,
+  "tool_calls": 13,
   "tokens": 0,
-  "latency_s": 104.535
+  "latency_s": 115.005
 }

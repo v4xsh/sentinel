@@ -1,42 +1,33 @@
 {
   "case_id": "EXTRA-013",
   "case": {
-    "status": "closed_legitimate",
-    "verdict": "legitimate",
-    "fraud_probability": 0.1288,
-    "pattern": "none",
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9777,
+    "pattern": "account_takeover",
     "pattern_description": "",
-    "affected_txn_ids": [],
-    "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C11000|_|_|_|_|_"
+    "affected_txn_ids": [
+      "3528137"
     ],
+    "first_suspicious_txn_id": "3528137",
+    "connected_card_ids": [],
     "connected_device_profiles": [],
-    "exposure_usd": 0.0,
+    "exposure_usd": 58.97,
     "evidence": [
       {
-        "claim": "In-person txn in region 315.0 differs from home region 325.0; card has prior activity in this region (dampener). Effective log_lr = +0.07 (base +0.14 \u00d7 damp 0.50).",
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 1 cards across 0 narrow devices after 1 iterations, $0 in-window transaction volume.",
         "source": "graph",
-        "ref": "conjunctive-lr:out_of_home_region_asof + region_history:dampened",
+        "ref": "query:ring_wcc",
         "entity_ids": [
-          "3581276",
-          "315.0"
+          "3528137"
         ]
       },
       {
-        "claim": "ATO shape: mixed-channel activity in 24h; 9 online txn(s) on id_15='New' in \u00b148h  (n_online in \u00b148h = 15).",
+        "claim": "ATO shape: mixed-channel activity in 24h  (n_online in \u00b148h = 3).",
         "source": "graph",
         "ref": "conjunctive-lr:ato \u00b148h + mixed_channel_last_24h",
         "entity_ids": [
-          "3581276"
-        ]
-      },
-      {
-        "claim": "Amount $2557.24 > $1,000 on in_person channel. Card has 145 prior txn(s) \u2265 $1279 and the device is not new \u2014 big-purchase-cleared archetype fits.",
-        "source": "graph",
-        "ref": "signal:amt_gt_1000 + prior-purchase-history",
-        "entity_ids": [
-          "3581276"
+          "3528137"
         ]
       },
       {
@@ -44,7 +35,7 @@
         "source": "graph",
         "ref": "signal:prior_fraud_on_card_tuple",
         "entity_ids": [
-          "C11000-K1"
+          "C03738-K1"
         ]
       },
       {
@@ -52,15 +43,7 @@
         "source": "graph",
         "ref": "alert_model:__intercept__  (weight +2.646)",
         "entity_ids": [
-          "3581276"
-        ]
-      },
-      {
-        "claim": "In-person charge in a billing region that isn't the card's observed home region (weight -0.78).",
-        "source": "graph",
-        "ref": "alert_model:out_of_home_region_asof  (weight -0.785)",
-        "entity_ids": [
-          "3581276"
+          "3528137"
         ]
       },
       {
@@ -68,7 +51,7 @@
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
         "entity_ids": [
-          "3581276"
+          "3528137"
         ]
       },
       {
@@ -76,39 +59,15 @@
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
         "entity_ids": [
-          "3581276"
+          "3528137"
         ]
       },
       {
-        "claim": "The card had both online and in-person activity in the 24 hours before this transaction (weight -0.22).",
+        "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
         "source": "graph",
-        "ref": "alert_model:mixed_channel_last_24h  (weight -0.220)",
+        "ref": "alert_model:recurring_ge3  (weight +0.679)",
         "entity_ids": [
-          "3581276"
-        ]
-      },
-      {
-        "claim": "Amount is \u22653\u03c3 away from this card's typical spend (weight -2.60).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_3  (weight -2.597)",
-        "entity_ids": [
-          "3581276"
-        ]
-      },
-      {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3581276"
-        ]
-      },
-      {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
-        "entity_ids": [
-          "3581276"
+          "3528137"
         ]
       },
       {
@@ -116,7 +75,7 @@
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
         "entity_ids": [
-          "3581276"
+          "3528137"
         ]
       },
       {
@@ -124,8 +83,14 @@
         "source": "graph",
         "ref": "alert_model:channel_in_person  (weight +1.574)",
         "entity_ids": [
-          "3581276"
+          "3528137"
         ]
+      },
+      {
+        "claim": "Customer explicitly denies making this transaction.",
+        "source": "customer",
+        "ref": "customer_response:denied",
+        "entity_ids": []
       }
     ],
     "similar_prior_cases": [],
@@ -133,34 +98,55 @@
     "written_to_graph": true,
     "graph_case_id": "CASE-EXTRA-013"
   },
-  "evidence_requests": [],
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 6,
+      "assumed_response": "Customer states they did not make this purchase."
+    }
+  ],
   "next_best_actions": {
     "initial": [
       {
-        "action": "CLOSE_NO_FRAUD",
+        "action": "VERIFY_WITH_CUSTOMER",
         "route": "auto",
-        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+        "reason": "R1/\u00a75: uncertain verdict \u2014 verify with customer before acting"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "\u00a73a: p>=0.30 or evidence requested \u2014 open a case"
       }
     ],
     "final": [
       {
-        "action": "CLOSE_NO_FRAUD",
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied \u2014 block + reissue"
+      },
+      {
+        "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "\u00a76: posterior below the stop threshold with \u22652 channels \u2014 close as legitimate"
+        "reason": "R2: customer denied"
+      },
+      {
+        "action": "BLOCK_ALL_CARDS",
+        "route": "L2",
+        "reason": "R10: at least two of this customer's cards show confirmed fraud OR credentials confirmed compromised"
       }
     ],
-    "what_changed": "nothing"
+    "what_changed": "added: BLOCK_CARD, BLOCK_ALL_CARDS; removed: VERIFY_WITH_CUSTOMER"
   },
   "sar": {
     "file": false,
-    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "reason": "\u00a73a: SAR not required \u2014 exposure $58.97 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
     "narrative": "",
     "subjects": [],
     "total_amount_usd": 0.0,
     "activity_dates": []
   },
-  "stop_reason": "No customer response was required; posterior converged.",
+  "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 11,
   "tokens": 0,
-  "latency_s": 108.696
+  "latency_s": 87.69
 }

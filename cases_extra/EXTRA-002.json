@@ -8,9 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C06962|_|_|_|_|_"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [],
     "exposure_usd": 0.0,
     "evidence": [
@@ -80,14 +78,6 @@
         ]
       },
       {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3471965"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
@@ -138,5 +128,5 @@
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 11,
   "tokens": 0,
-  "latency_s": 107.019
+  "latency_s": 327.258
 }

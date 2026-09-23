@@ -8,25 +8,20 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C05292|371.0|150.0|visa|226.0|credit",
-      "C11413|170.0|150.0|mastercard|219.0|credit",
-      "C05704|170.0|150.0|visa|226.0|credit",
-      "C09568|337.0|150.0|visa|226.0|debit",
-      "C11227|100.0|150.0|visa|226.0|credit",
-      "C01155|553.0|150.0|visa|226.0|credit",
-      "C11003|283.0|150.0|mastercard|224.0|debit",
-      "C01909|512.0|150.0|visa|226.0|debit",
-      "C00681|583.0|150.0|visa|226.0|credit",
-      "C02881|123.0|144.0|visa|147.0|credit",
-      "C03042|562.0|150.0|mastercard|219.0|credit",
-      "C02716|583.0|150.0|visa|226.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "Trident/7.0 | Windows 8.1 | ie 11.0 for desktop | 1680x1050"
     ],
     "exposure_usd": 0.0,
     "evidence": [
+      {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $4,555,535 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3464869"
+        ]
+      },
       {
         "claim": "Online txn from a device flagged New.  device_profile=Trident/7.0 | Windows 8.1 | ie 11.0 for desktop | 1680x1050",
         "source": "graph",
@@ -76,14 +71,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3464869"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -108,14 +95,6 @@
         ]
       },
       {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3464869"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
@@ -133,7 +112,7 @@
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Analyst review for case HHG-015 indicates a legitimate card-not-present transaction conducted on a new Windows 8.1 device via Internet Explorer 11, resulting in a calibrated fraud probability of just 0.02. Although historical risk factors are present\u2014including prior confirmed fraud on this card tuple and customer profile, as well as an unusual transaction amount more than 3 standard deviations from typical spend\u2014these are outweighed by strong mitigating signals. Specifically, Vesta\u2019s `id_15` flag identifies the first-seen device, which historically correlates more frequently with legitimate activities such as travel or a new phone than with confirmed fraud, a pattern also observed in similar historical cases like CC-3475 where alerts were cleared following customer confirmation. The bank's risk model positioned the transaction in decile 10/10, which among historical alerts leans toward cleared outcomes. Consequently, per the policy engine and automated guidelines, the appropriate action decided for this case is to close the alert with no fraud found.",
+    "summary": "Case HHG-015 involves an online card-not-present transaction executed on a new device (`id_15` = New) running Trident/7.0 on Windows 8.1, which triggered a card_not_present_new_device pattern. Although the history ledger shows prior confirmed fraud cases on both this card tuple and a different card belonging to the customer, as well as an amount significantly deviating from typical spend and a high-decile bank model score, several mitigating factors strongly counter these risks. Specifically, Vesta's first-seen-on-this-card device flag heavily leans toward cleared alerts such as travel or a new phone rather than confirmed fraud, and the baseline model scoring alongside device behavior heavily discounted the overall threat level. Consequently, the calibrated probability of fraud is very low at 0.02, leading to a legitimate verdict. In accordance with the policy engine's decided actions for case HHG-015, the system will CLOSE_NO_FRAUD.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-015"
   },
@@ -164,7 +143,7 @@
     "activity_dates": []
   },
   "stop_reason": "No customer response was required; posterior converged.",
-  "tool_calls": 12,
-  "tokens": 1255,
-  "latency_s": 105.447
+  "tool_calls": 13,
+  "tokens": 1375,
+  "latency_s": 119.992
 }

@@ -13,6 +13,14 @@
     "exposure_usd": 0.0,
     "evidence": [
       {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $4,430,992 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3491361"
+        ]
+      },
+      {
         "claim": "In-person txn in region 126.0 differs from home region 325.0; card had 407 concurrent home-region txns in 14d (clone-shape); card has prior activity in this region (dampener). Effective log_lr = +0.11 (base +0.14 \u00d7 damp 0.75).",
         "source": "graph",
         "ref": "conjunctive-lr:out_of_home_region_asof + region_history:dampened",
@@ -86,14 +94,6 @@
         ]
       },
       {
-        "claim": "The card had both online and in-person activity in the 24 hours before this transaction (weight -0.22).",
-        "source": "graph",
-        "ref": "alert_model:mixed_channel_last_24h  (weight -0.220)",
-        "entity_ids": [
-          "3491361"
-        ]
-      },
-      {
         "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
         "source": "graph",
         "ref": "alert_model:recurring_ge3  (weight +0.679)",
@@ -122,29 +122,10 @@
         "source": "customer",
         "ref": "customer_response:confirmed",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.693.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3491361"
-        ]
       }
     ],
-    "similar_prior_cases": [
-      "CC-2829",
-      "CC-5498",
-      "CC-5425",
-      "CC-2995",
-      "CC-3981",
-      "CC-3429",
-      "CC-3939",
-      "CC-2251",
-      "CC-5489",
-      "CC-5429"
-    ],
-    "summary": "Case HHG-018 triggered an alert due to out-of-region in-person activity differing from the card's home region, combined with mixed-channel usage and a high-risk model score in decile 10. Historical risk factors included prior confirmed fraud cases on both the card tuple and a different card, though these were counterbalanced by established recurring transaction patterns at this amount and prior activity in the alternate region. The posterior probability of fraud initially reached 0.693 before customer contact. Following verification, the customer confirmed making this transaction, leading to a calibrated fraud probability of 0.15 and a legitimate verdict. Consequently, a case has been created, the customer has been verified, and a warning has been issued to the customer.",
+    "similar_prior_cases": [],
+    "summary": "Case HHG-018 triggered a fraud review due to out-of-region card-present usage combined with historical risk indicators and mixed-channel activity, despite prior familiarity with the transaction amount and a regional dampener. Although the transaction was flagged by the model in decile 10 and shared device links suggested elevated risk, the customer directly confirmed making the purchase, resolving the ambiguity. Similar historical cases involving out-of-region use informed the initial risk assessment, but direct customer verification weighed heavily against the fraud hypothesis. Consequently, the calibrated probability of fraud dropped to 0.15, leading to a legitimate verdict. Per the policy engine actions, the case was created, the customer was verified, and a customer warning was issued.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-018"
   },
@@ -190,7 +171,7 @@
         "reason": "R7: send a recurring-charge reminder"
       }
     ],
-    "what_changed": "Customer response did not change the recommended actions."
+    "what_changed": "nothing"
   },
   "sar": {
     "file": false,
@@ -201,7 +182,7 @@
     "activity_dates": []
   },
   "stop_reason": "Customer response (confirmed) settled the verdict.",
-  "tool_calls": 11,
-  "tokens": 869,
-  "latency_s": 36.794
+  "tool_calls": 12,
+  "tokens": 1595,
+  "latency_s": 131.592
 }

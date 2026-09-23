@@ -93,33 +93,7 @@
       "3585345"
     ],
     "first_suspicious_txn_id": "3578405",
-    "connected_card_ids": [
-      "C03072|555.0|203.0|visa|226.0|credit",
-      "C11750|438.0|106.0|visa|226.0|debit",
-      "C00005|555.0|162.0|visa|102.0|credit",
-      "C07855|176.0|185.0|mastercard|137.0|credit",
-      "C06864|555.0|150.0|visa|195.0|debit",
-      "C03443|488.0|117.0|mastercard|224.0|credit",
-      "C08391|375.0|185.0|mastercard|224.0|debit",
-      "C00750|327.0|150.0|discover|102.0|credit",
-      "C08106|545.0|185.0|visa|138.0|debit",
-      "C09241|321.0|150.0|visa|226.0|debit",
-      "C02639|266.0|185.0|visa|102.0|credit",
-      "C11496|512.0|150.0|visa|226.0|debit",
-      "C06759|_|144.0|visa|166.0|debit",
-      "C00073|545.0|185.0|visa|138.0|debit",
-      "C02715|459.0|185.0|visa|226.0|credit",
-      "C06731|459.0|185.0|mastercard|189.0|credit",
-      "C04597|_|_|_|_|_",
-      "C02545|459.0|185.0|mastercard|224.0|credit",
-      "C02585|555.0|147.0|mastercard|195.0|credit",
-      "C01525|440.0|185.0|visa|138.0|debit",
-      "C07311|111.0|150.0|visa|162.0|credit",
-      "C01426|399.0|150.0|american express|118.0|credit",
-      "C12081|555.0|146.0|visa|137.0|credit",
-      "C01982|494.0|150.0|visa|226.0|credit",
-      "C04386|545.0|185.0|visa|195.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "SM-G610F Build/NRD90M | - | chrome 66.0 for android | -"
     ],
@@ -188,14 +162,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3583368"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -220,22 +186,6 @@
         ]
       },
       {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3583368"
-        ]
-      },
-      {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
-        "entity_ids": [
-          "3583368"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
@@ -250,18 +200,10 @@
         "entity_ids": [
           "3583368"
         ]
-      },
-      {
-        "claim": "Posterior before customer contact: 0.008.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3583368"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-011 has been evaluated as fraud with a calibrated probability of 0.85, following a distinct card-testing sequence of 14 small online transactions followed by 34 larger ones. The activity originated online from a new device (SM-G610F running Chrome 66 for Android) that shares a device family with 352 other cards in the window, while the customer explicitly denies making the transaction. Historical indicators strongly support this verdict, showing prior confirmed-fraud cases associated with both this card tuple and the customer on a different card. This pattern closely mirrors prior confirmed-fraud cases such as CC-1593 and CC-0606, which also involved unauthorized online purchases originating from new devices. In response to these findings, the policy engine has triggered a series of required actions, including blocking the card, creating a case, filing a report, monitoring connected cards, and initiating step-up authentication.",
+    "summary": "Case HHG-011 involves a confirmed fraud verdict with a calibrated probability of 0.85 driven by a clear card-testing pattern consisting of 14 sub-$5 online transactions followed by 34 larger ones in the window. The transaction occurred on an online channel via a newly flagged Chrome Android device shared across 352 other cards, alongside a risk score in the top decile and prior confirmed-fraud history on both the card and the customer. The customer explicitly denied making the transaction, aligning with the historical fraud indicators despite some mitigating factors like the new device identity flag. Graph data shows strong structural parallels to historical card-not-present fraud cases involving unrecognized online activity from newly introduced devices. Moving forward, the policy engine has triggered actions to block the card, create a case, file a report, monitor connected cards, and enforce step-up authentication.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-011"
   },
@@ -312,7 +254,7 @@
   "sar": {
     "file": true,
     "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented",
-    "narrative": "Suspicious activity involving card testing and subsequent unauthorized charges was identified under Case ID HHG-011, resulting in a total financial exposure of $3,984.80. The transaction sequence exhibited a classic card-testing shape consisting of 14 sub-$5 online transactions followed by 34 larger follow-up transactions within the observation window. The activity originated from an online channel using a newly flagged device (Samsung SM-G610F running Chrome 66.0 for Android) that shared a device family with 352 other cards during the same window. Risk indicators included a prior confirmed fraud history associated with both the card tuple and the customer on a different card, alongside an online transaction amount deviating significantly from typical spending patterns. The customer explicitly denied making the transaction, leading to the classification of the verdict as fraud. This pattern bears strong operational similarity to prior confirmed fraud cases retrieved from the graph, such as Case CC-1593 and Case CC-0606, which also featured unauthorized card-not-present purchases executed via newly introduced devices. Appropriate risk mitigation and case documentation procedures have been initiated in accordance with institutional policy.",
+    "narrative": "Suspicious activity was identified under Case ID HHG-011 involving a confirmed fraud pattern of card testing on an online channel. The activity exhibits a characteristic card-testing shape consisting of 14 sub-$5 online transactions followed by 34 larger transactions within the same window, resulting in a total exposure of $3,984.80. The transactions originated from a new device profile (SM-G610F running Chrome 66.0 for Android) that was shared with 352 other cards during the window. Historical indicators reveal that the card tuple and the customer both have prior confirmed-fraud cases on record. The customer was contacted and explicitly denied making the transactions. Following the verification, the transaction was marked as fraud and handled according to institutional policy.",
     "subjects": [
       "C11923",
       "C11923-K2",
@@ -326,6 +268,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 10,
-  "tokens": 3026,
-  "latency_s": 166.59
+  "tokens": 3152,
+  "latency_s": 262.107
 }

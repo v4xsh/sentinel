@@ -16,10 +16,7 @@
       "3441338"
     ],
     "first_suspicious_txn_id": "3436706",
-    "connected_card_ids": [
-      "C03218|321.0|150.0|visa|226.0|debit",
-      "C01154|529.0|150.0|visa|162.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [],
     "exposure_usd": 4368.02,
     "evidence": [
@@ -109,14 +106,6 @@
         "source": "customer",
         "ref": "customer_response:denied",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.584.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3436706"
-        ]
       }
     ],
     "similar_prior_cases": [],
@@ -174,5 +163,5 @@
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 11,
   "tokens": 0,
-  "latency_s": 104.771
+  "latency_s": 297.912
 }

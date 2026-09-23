@@ -58,7 +58,7 @@ Nodes in order:
 13. `write_memory` — persists a `SentinelCase` vertex with all edges via
     the `write_case` installed query. Skipped when
     `SENTINEL_WRITE_MEMORY_DISABLED=1`.
-14. `emit` — assembles the pydantic answer file and validates I1-I11.
+14. `emit` — assembles the pydantic answer file and validates I1-I13.
 
 ## 3. Policy engine
 
@@ -68,7 +68,7 @@ Nodes in order:
 - R10 gate uses `sentinel/agent/r10.py` — counts DISTINCT card tuples with
   `outcome=confirmed_fraud AND closed_at < opened_at`, +1 if the current
   card's verdict is fraud.
-- Invariants I1-I11 in `sentinel/policy/invariants.py`, enforced on every
+- Invariants I1-I13 in `sentinel/policy/invariants.py`, enforced on every
   answer file:
   1. `sar.file` ⇔ `FILE_REPORT` in final actions.
   2. `verdict=legitimate` ⇒ empty affected_txn_ids, 0 exposure, no SAR.
@@ -140,4 +140,4 @@ what the actions would have been if the customer had said something else.
   ring components, SAR replay, channels/simulator).
 - 16 query-contract tests hitting every installed GSQL query with the
   exact param dicts the agent uses.
-- Total suite: **113 tests** (`python -m pytest tests/`).
+- Total suite: **129 tests** (`python -m pytest tests/`).

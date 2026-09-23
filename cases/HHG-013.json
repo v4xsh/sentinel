@@ -8,17 +8,20 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C10745|298.0|150.0|visa|226.0|debit",
-      "C07711|555.0|150.0|visa|226.0|debit",
-      "C07671|452.0|150.0|mastercard|117.0|debit",
-      "C04865|562.0|150.0|mastercard|219.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "Windows | - | chrome 66.0 | -"
     ],
     "exposure_usd": 0.0,
     "evidence": [
+      {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $5,051,414 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3526826"
+        ]
+      },
       {
         "claim": "Online txn from a device flagged New.  device_profile=Windows | - | chrome 66.0 | -",
         "source": "graph",
@@ -68,14 +71,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3526826"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -109,7 +104,7 @@
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-013 involves an online card-not-present transaction initiated from a new Windows device running Chrome, triggering a `card_not_present_new_device` pattern with a low calibrated fraud probability of 0.06. While the history reveals prior confirmed fraud cases on both this card tuple and a different card, along with a top-decile risk score and online channel usage, the new device flag historically aligns more frequently with benign events like travel or new phones rather than actual fraud. Similar historical cases such as CC-3475, CC-2367, and CC-0852 demonstrate that high-risk alerts can successfully clear when legitimate customer activity\u2014such as travel\u2014is verified. Weighing these behavioral indicators and historical precedents, the policy engine ultimately determined that the alert should be closed as legitimate. Consequently, the decided action for this case is CLOSE_NO_FRAUD, meaning no further restrictions or verifications will be applied to the transaction.",
+    "summary": "Case HHG-013 involves an online card-not-present transaction executed on a newly flagged device (Chrome 66.0 on Windows) that lacks prior history on this card within the 90-window. Although the card tuple and customer history show prior confirmed fraud cases, and the transaction landed in the bank's highest risk decile (10/10), the shared device's high degree triggered a component signal suppression. Furthermore, historical patterns indicate that Vesta's 'New' device flag and decile 10 scoring in this context frequently align with cleared alerts such as legitimate travel or new phone setups rather than actual fraud. Similar historical alerts evaluated in the graph similarly resulted in cleared outcomes following cardholder travel verification. Based on these combined risk indicators and historical precedents, the calibrated probability of fraud remains low at 0.06. Consequently, the policy engine has determined the final action for case HHG-013 to be CLOSE_NO_FRAUD.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-013"
   },
@@ -141,6 +136,6 @@
   },
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 10,
-  "tokens": 1272,
-  "latency_s": 100.818
+  "tokens": 1384,
+  "latency_s": 103.571
 }

@@ -22,7 +22,7 @@ deterministic policy engine decides actions.
 | `backtest/BACKTEST_REPORT.md` | 150-case simulated backtest (75 tune / 75 held-out eval), τ curve, reliability |
 | `ui/` | FastAPI + d3 SPA — 10 views incl. what-if, memory, monitor, findings |
 | `docs/` | this file + ARCHITECTURE + BENCHMARK_RESULTS + DECISIONS + LEARNINGS + BLOG_DRAFT + SOCIAL_POST + MCP_TRANSCRIPT + UNDOCUMENTED_FINDINGS + DEMO_SCRIPT |
-| `tests/` | 113 tests (I1–I13, 16 query contracts, SAR encoding replay, initial-reason sweep) |
+| `tests/` | 129 tests (I1–I13, 16 query contracts, SAR encoding replay, initial-reason sweep, ask-first) |
 
 ## Headline numbers
 
@@ -39,7 +39,7 @@ deterministic policy engine decides actions.
 | SentinelCase vertices in graph | **35** (20 benchmark + 15 monitoring) |
 | Installed GSQL queries | **18** |
 | Latency (LLM on, shared MCP session) | **~5 s / case** |
-| pytest | **113 / 113** offline |
+| pytest | **129 / 129** offline |
 
 ## Three things to look at first
 

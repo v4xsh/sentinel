@@ -15,6 +15,14 @@
     "exposure_usd": 0.0,
     "evidence": [
       {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $4,652,559 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3503878"
+        ]
+      },
+      {
         "claim": "Online txn from a device flagged New.  device_profile=Windows | other | chrome 61.0 | 1280x720",
         "source": "graph",
         "ref": "conjunctive-lr:new_device",
@@ -63,14 +71,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3503878"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -103,19 +103,8 @@
         ]
       }
     ],
-    "similar_prior_cases": [
-      "CC-2011",
-      "CC-3475",
-      "CC-5026",
-      "CC-0933",
-      "CC-2860",
-      "CC-0946",
-      "CC-4197",
-      "CC-0430",
-      "CC-3590",
-      "CC-0489"
-    ],
-    "summary": "Case HHG-019 has been evaluated as legitimate with a calibrated fraud probability of 0.06 and is closed with no fraud found. The transaction occurred on the online channel utilizing a Windows device running Chrome flagged as new to this card, sharing its device family with four other cards without triggering any fraud tiers. Historical analysis indicates that while the customer and card tuple have prior confirmed-fraud cases, the specific new-device flag and the bank's model decile 10/10 scoring historically lean more heavily toward cleared alerts such as travel or a new phone. Consequently, no customer confirmation or denial status is noted in the ledger. The case will now be closed with no further action required (`CLOSE_NO_FRAUD`).",
+    "similar_prior_cases": [],
+    "summary": "Case HHG-019 involves an online card-not-present transaction initiated from a new Windows and Chrome device that was first seen at the time of the transaction. Although the card history shows prior confirmed fraud cases both on this card tuple and on a different card belonging to the customer, the transaction occurred on a low-risk device family with a small shared degree and no prior confirmed-fraud cases on the device itself. Furthermore, Vesta\u2019s new device flag and the bank's model decile scoring both weigh more heavily toward cleared alerts such as travel or a new phone rather than confirmed fraud. Weighing these factors together, the calibrated probability of fraud is low at 0.06, leading to a legitimate verdict. Consequently, the policy engine has determined that the transaction should be closed with no fraud detected, resulting in action CLOSE_NO_FRAUD.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-019"
   },
@@ -139,14 +128,14 @@
   },
   "sar": {
     "file": false,
-    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = none, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
+    "reason": "\u00a73a: SAR not required \u2014 exposure $0.00 vs $1,000 threshold (below), shared_element = device, pattern is documented / none. None of the \u00a73a trigger conditions holds.",
     "narrative": "",
     "subjects": [],
     "total_amount_usd": 0.0,
     "activity_dates": []
   },
   "stop_reason": "No customer response was required; posterior converged.",
-  "tool_calls": 12,
-  "tokens": 800,
-  "latency_s": 37.991
+  "tool_calls": 13,
+  "tokens": 1323,
+  "latency_s": 122.702
 }

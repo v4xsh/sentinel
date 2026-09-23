@@ -10,9 +10,7 @@
       "3581141"
     ],
     "first_suspicious_txn_id": "3581141",
-    "connected_card_ids": [
-      "C08299|216.0|150.0|visa|226.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "- | - | - | -"
     ],
@@ -65,24 +63,16 @@
         ]
       },
       {
-        "claim": "Posterior before customer contact: 0.999.",
+        "claim": "Pattern assigned by channel rule: online activity inconsistent with the cardholder's history and no more specific typology matched (README pattern 2).",
         "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3581141"
-        ]
-      },
-      {
-        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
-        "source": "graph",
-        "ref": "c6v3-pf:fallback_pattern",
+        "ref": "c6v3-pf:channel_rule",
         "entity_ids": [
           "3581141"
         ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-009 has been classified as fraud with a calibrated probability of 0.98, driven by high-risk indicators in the transaction history and online channel. The bank's risk model scored the transaction in the 9th decile, and the customer explicitly denies making the purchase. Although the device is linked to a known device family with a high degree, ring-component signals were suppressed. Similar historical cases such as CC-4195, CC-3749, and CC-0097 reflect comparable fraud patterns evaluated by the system. Consequently, the policy engine has triggered actions to block the card and create a formal case.",
+    "summary": "Analyst summary for case HHG-009: \n\nCase HHG-009 involves a card-not-present fraud pattern driven by suspicious online channel activity and a high-risk model score in the upper deciles. The device evidence indicates a known device family with a high degree count, though the ring-component signal was suppressed. Furthermore, the customer explicitly denied making the transaction, solidifying the fraudulent nature of the activity. Historical model weights and prior similar cases strongly lean toward confirmed fraud given the inconsistencies with the cardholder's usual behavior. Following the policy engine's determination, the card has been blocked and a case has been created to secure the account.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-009"
   },
@@ -103,7 +93,7 @@
       {
         "action": "VERIFY_WITH_CUSTOMER",
         "route": "auto",
-        "reason": "R1: verify before any block on unconfirmed fraud"
+        "reason": "R1/\u00a76: pre-response initial recommendation (no customer signal has been consumed yet)"
       },
       {
         "action": "CREATE_CASE",
@@ -135,6 +125,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 12,
-  "tokens": 876,
-  "latency_s": 101.267
+  "tokens": 1013,
+  "latency_s": 325.644
 }

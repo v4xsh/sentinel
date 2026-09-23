@@ -11,13 +11,21 @@
       "3450503",
       "3450629"
     ],
-    "first_suspicious_txn_id": "3450629",
+    "first_suspicious_txn_id": "3450436",
     "connected_card_ids": [],
     "connected_device_profiles": [
       "Windows | Windows 10 | chrome 65.0 | 1920x1080"
     ],
     "exposure_usd": 300.14,
     "evidence": [
+      {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $5,038,633 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3450629"
+        ]
+      },
       {
         "claim": "Device family has KNOWN_DEVICE degree=302 (>100 hub cap). Ring-component signal suppressed.",
         "source": "graph",
@@ -65,35 +73,16 @@
         "entity_ids": []
       },
       {
-        "claim": "Posterior before customer contact: 0.320.",
+        "claim": "Pattern assigned by channel rule: online activity inconsistent with the cardholder's history and no more specific typology matched (README pattern 2).",
         "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3450629"
-        ]
-      },
-      {
-        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
-        "source": "graph",
-        "ref": "c6v3-pf:fallback_pattern",
+        "ref": "c6v3-pf:channel_rule",
         "entity_ids": [
           "3450629"
         ]
       }
     ],
-    "similar_prior_cases": [
-      "CC-5446",
-      "CC-0443",
-      "CC-5172",
-      "CC-0261",
-      "CC-5217",
-      "CC-4734",
-      "CC-5345",
-      "CC-2956",
-      "CC-5481",
-      "CC-0623"
-    ],
-    "summary": "Case HHG-017 has been evaluated as fraud with a calibrated probability of 0.85, driven by a high-risk online channel and a device associated with a known hub-cap device family utilizing a hidden IP proxy. Although the historical alert model baseline and proxy indicators initially suggested lower risk, the customer explicitly denied making the transaction during outreach. This direct customer denial, combined with the fallback card-not-present fraud pattern, solidified the fraudulent classification of the activity. Following this verdict, the card has been blocked and a formal case has been created for further investigation.",
+    "similar_prior_cases": [],
+    "summary": "Analyst review for case HHG-017 indicates a high likelihood of fraud with a calibrated probability of 0.85 driven by the online channel and card-not-present typology. Although the device family exceeded the hub cap and the IP address utilized an anonymous or transparent proxy (`id_23`), the risk profile was heavily elevated by suspicious online activity. Furthermore, the customer explicitly denied making the transaction, solidifying the fraudulent determination. Similar historical precedent shows that customer verification plays a decisive role in resolving such disputes when model decile scores present mixed signals. Per the policy engine actions, the card has been blocked and a formal case created.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-017"
   },
@@ -129,7 +118,7 @@
         "reason": "R2: customer denied"
       }
     ],
-    "what_changed": "Customer denied shifted the posterior from 0.32 to 0.85, causing the action list to update."
+    "what_changed": "added: BLOCK_CARD; removed: VERIFY_WITH_CUSTOMER"
   },
   "sar": {
     "file": false,
@@ -140,7 +129,7 @@
     "activity_dates": []
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
-  "tool_calls": 12,
-  "tokens": 565,
-  "latency_s": 37.781
+  "tool_calls": 13,
+  "tokens": 2172,
+  "latency_s": 120.252
 }

@@ -5,44 +5,26 @@
     "verdict": "fraud",
     "fraud_probability": 0.8585,
     "pattern": "undocumented",
-    "pattern_description": "Case HHG-014 involves an online transaction initiated from a new device hiding behind an anonymous proxy, which the customer explicitly denies making. The policy engine assigned the \"undocumented\" fraud pattern to this activity. A similar prior case is CC-4186.",
+    "pattern_description": "On case HHG-014, an online transaction occurred via an anonymous proxy using a first-seen device (`id_15='New'`), contributing to an undocumented fraud pattern involving a large device ring of 5,487 cards across 9,199 narrow devices. Following the customer's explicit denial of the transaction, the posterior probability reached 0.403.",
     "affected_txn_ids": [
       "3460634",
       "3478561"
     ],
     "first_suspicious_txn_id": "3460634",
-    "connected_card_ids": [
-      "C03744|224.0|106.0|mastercard|137.0|debit",
-      "C11468|174.0|150.0|mastercard|_|credit",
-      "C12900|310.0|150.0|mastercard|224.0|debit",
-      "C09049|555.0|150.0|visa|226.0|debit",
-      "C10955|404.0|150.0|mastercard|102.0|credit",
-      "C12033|174.0|150.0|visa|226.0|credit",
-      "C10326|555.0|150.0|visa|226.0|debit",
-      "C12132|360.0|150.0|mastercard|126.0|debit",
-      "C11687|564.0|150.0|visa|226.0|debit",
-      "C05448|302.0|150.0|visa|226.0|debit",
-      "C13291|555.0|150.0|visa|226.0|debit",
-      "C12033|523.0|150.0|visa|226.0|credit",
-      "C12574|111.0|150.0|visa|226.0|credit",
-      "C07472|380.0|150.0|visa|226.0|debit",
-      "C12132|360.0|150.0|mastercard|166.0|debit",
-      "C03551|555.0|150.0|visa|226.0|debit",
-      "C11082|321.0|150.0|visa|226.0|credit",
-      "C07562|545.0|185.0|visa|137.0|credit",
-      "C08962|408.0|185.0|mastercard|224.0|debit",
-      "C11923|545.0|185.0|visa|138.0|debit",
-      "C09174|567.0|150.0|mastercard|195.0|debit",
-      "C05381|408.0|185.0|mastercard|224.0|debit",
-      "C09657|545.0|185.0|visa|226.0|credit",
-      "C11919|500.0|185.0|mastercard|219.0|credit",
-      "C11670|_|150.0|visa|226.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080"
     ],
     "exposure_usd": 187.33,
     "evidence": [
+      {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $4,405,120 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3478561"
+        ]
+      },
       {
         "claim": "Online txn from a device flagged New behind an anonymous/hidden proxy.  device_profile=SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080",
         "source": "graph",
@@ -125,18 +107,10 @@
         "source": "customer",
         "ref": "customer_response:denied",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.403.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3478561"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-014 has been assessed as fraud with a calibrated probability of 0.86, driven by a combination of suspicious digital identity flags and direct customer denial. The online transaction originated from a new device operating behind an anonymous proxy, sharing infrastructure with a high-risk Tier 4 device linked to multiple prior confirmed fraud cases. Although the bank's initial model score and certain isolated device flags leaned toward cleared reviews, the customer explicitly denied making the transaction, solidifying the fraudulent nature of the activity. Similar historical incidents, such as case CC-4186, similarly involved unauthorized online purchases executed from previously unseen devices. Following this verdict, the policy engine has triggered the necessary containment actions, including blocking the card, creating a case, filing a report, and monitoring connected cards.",
+    "summary": "Case HHG-014 has been classified as fraud with a calibrated probability of 0.86, driven by a high-risk device fingerprint tied to multiple confirmed fraud cases and a large connected device component. The transaction occurred online via a new device behind an anonymous proxy, carrying account takeover characteristics that heavily outweighed features like the initial low model risk score. Furthermore, the customer explicitly denied making the transaction, cementing the fraudulent nature of the activity after an initial posterior score of 0.403. In response to these findings, the policy engine has executed automated safeguards to block the card, create a formal case, file a regulatory report, and monitor connected cards.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-014"
   },
@@ -202,7 +176,7 @@
   "sar": {
     "file": true,
     "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented",
-    "narrative": "Financial Institution (Case ID: HHG-014) is filing this suspicious activity report regarding a fraudulent online transaction totaling $187.33. The transaction was executed from a previously unseen device profile (SM-G935F running Android 7.0) utilizing an anonymous or hidden proxy connection. Further risk analysis revealed that the associated device is classified as Tier 4 (KNOWN_DEVICE) with a degree of 52, having been linked to 74 other payment cards within the operational window and carrying four confirmed-fraud closed cases. The customer has explicitly denied making or authorizing this transaction. Consequently, the transaction was marked as fraudulent and subjected to review. This activity shares behavioral characteristics with prior fraudulent incidents, such as Case CC-4186, which involved unauthorized card-not-present activity originating from a newly introduced device. The card has been blocked and flagged to prevent further unauthorized exposure.",
+    "narrative": "Suspicious Activity Report Narrative:\n\nCase ID HHG-014 involves unauthorized card-not-present activity resulting in a financial exposure of $187.33. The fraudulent transaction was executed online via an anonymous proxy using a device flagged as new to the card. Technical indicators associate the device with a Tier 4 risk classification, which includes 74 other cards within the observation window and four confirmed prior fraud cases linked to the same hardware profile. Graph network analysis further places the device within a wider structural component comprising 5,487 cards and 9,199 narrow devices exhibiting high-velocity transaction volumes. The customer explicitly denied authorizing the transaction upon review. Consequently, the card was blocked and scheduled for reissue, and the activity has been classified as confirmed fraud under case HHG-014.",
     "subjects": [
       "C13487",
       "C13487-K1",
@@ -215,7 +189,7 @@
     ]
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
-  "tool_calls": 12,
-  "tokens": 3328,
-  "latency_s": 171.832
+  "tool_calls": 13,
+  "tokens": 3642,
+  "latency_s": 123.152
 }

@@ -30,33 +30,7 @@
       "3561904"
     ],
     "first_suspicious_txn_id": "3518407",
-    "connected_card_ids": [
-      "C03231|250.0|150.0|visa|226.0|credit",
-      "C12807|352.0|117.0|mastercard|134.0|credit",
-      "C07347|555.0|102.0|mastercard|224.0|debit",
-      "C11509|_|_|_|_|_",
-      "C12695|555.0|185.0|mastercard|137.0|credit",
-      "C02147|500.0|185.0|mastercard|224.0|credit",
-      "C13406|438.0|106.0|visa|_|debit",
-      "C06630|500.0|185.0|mastercard|137.0|credit",
-      "C02116|555.0|147.0|visa|137.0|credit",
-      "C06793|408.0|185.0|mastercard|224.0|debit",
-      "C00583|545.0|185.0|visa|226.0|credit",
-      "C06464|177.0|185.0|mastercard|224.0|credit",
-      "C02147|_|_|_|_|_",
-      "C11844|103.0|185.0|visa|137.0|credit",
-      "C01521|130.0|185.0|visa|137.0|credit",
-      "C01279|_|117.0|visa|_|debit",
-      "C03488|415.0|185.0|mastercard|195.0|credit",
-      "C00978|500.0|185.0|mastercard|224.0|credit",
-      "C02851|555.0|185.0|visa|226.0|credit",
-      "C08962|408.0|185.0|mastercard|224.0|debit",
-      "C11923|545.0|185.0|visa|138.0|debit",
-      "C04248|202.0|185.0|mastercard|137.0|credit",
-      "C11214|179.0|106.0|visa|137.0|debit",
-      "C04505|555.0|185.0|mastercard|224.0|credit",
-      "C07618|580.0|106.0|visa|195.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "- | - | chrome 66.0 | -"
     ],
@@ -117,14 +91,6 @@
         ]
       },
       {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
-        "entity_ids": [
-          "3558054"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 9/10; among historical alerts this decile leans toward fraud (model weight +1.64).",
         "source": "graph",
         "ref": "alert_model:risk_decile_9  (weight +1.638)",
@@ -141,24 +107,16 @@
         ]
       },
       {
-        "claim": "Posterior before customer contact: 1.000.",
+        "claim": "Pattern assigned by channel rule: online activity inconsistent with the cardholder's history and no more specific typology matched (README pattern 2).",
         "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3558054"
-        ]
-      },
-      {
-        "claim": "Fallback pattern `card_not_present_fraud` assigned: verdict is fraud but no typology detector matched. Rule applied: see C6v3-PF.",
-        "source": "graph",
-        "ref": "c6v3-pf:fallback_pattern",
+        "ref": "c6v3-pf:channel_rule",
         "entity_ids": [
           "3558054"
         ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Analyst summary for case HHG-008:\n\nThis card-not-present fraud case involves an online transaction flagged by the model in the 9th decile of risk, combined with a device family showing a high hub cap degree and a sequence of five or more online transactions within forty-eight hours. Historical records indicate that both this specific card tuple and the customer on a different card have prior confirmed-fraud cases, reinforcing the risk profile. The customer explicitly denies making the transaction, directly settling the fraud verdict with a calibrated probability of 0.98. Similar prior cases such as CC-4276 and CC-5444 also involved confirmed card-not-present fraudulent online purchases. In accordance with the policy engine's decisions, the system will block the card and create a case.",
+    "summary": "Case HHG-008 has been classified as fraud with a calibrated probability of 0.98, driven primarily by suspicious online channel activity and a high-risk model score in the upper deciles. Historical records further reinforce this determination, showing prior confirmed fraud cases associated with both this specific card tuple and the customer across different cards, alongside a dense velocity of online transactions over a 48-hour window. The device profile revealed a known device linked to high connection counts, and the customer explicitly denied making the transaction. Consequently, the policy engine has triggered actions to block the card and create a formal case.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-008"
   },
@@ -174,12 +132,12 @@
       {
         "action": "BLOCK_CARD",
         "route": "L1",
-        "reason": "R2/R6: confirmed fraud \u2014 block + reissue"
+        "reason": "\u00a76: posterior \u2265 0.85 on \u22652 independent channels before customer contact"
       },
       {
         "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "R2: confirmed fraud \u2014 open case"
+        "reason": "R1/\u00a76: pre-response initial recommendation (no customer signal has been consumed yet)"
       }
     ],
     "final": [
@@ -206,6 +164,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 10,
-  "tokens": 1261,
-  "latency_s": 101.506
+  "tokens": 1299,
+  "latency_s": 281.602
 }

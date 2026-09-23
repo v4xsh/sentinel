@@ -13,9 +13,7 @@
       "3548395"
     ],
     "first_suspicious_txn_id": "3548395",
-    "connected_card_ids": [
-      "C00750|_|_|_|_|_"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "iOS Device | iOS 11.3.0 | mobile safari 11.0 | 2208x1242"
     ],
@@ -70,22 +68,6 @@
         ]
       },
       {
-        "claim": "The card had both online and in-person activity in the 24 hours before this transaction (weight -0.22).",
-        "source": "graph",
-        "ref": "alert_model:mixed_channel_last_24h  (weight -0.220)",
-        "entity_ids": [
-          "3549837"
-        ]
-      },
-      {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
-        "entity_ids": [
-          "3549837"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
@@ -113,17 +95,17 @@
       {
         "action": "BLOCK_CARD",
         "route": "L1",
-        "reason": "R2/R6: confirmed fraud \u2014 block + reissue"
+        "reason": "\u00a76: posterior \u2265 0.85 on \u22652 independent channels before customer contact"
       },
       {
         "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "R2: confirmed fraud \u2014 open case"
+        "reason": "R1/\u00a76: pre-response initial recommendation (no customer signal has been consumed yet)"
       },
       {
         "action": "BLOCK_ALL_CARDS",
         "route": "L2",
-        "reason": "R10: at least two of this customer's cards show confirmed fraud OR credentials confirmed compromised"
+        "reason": "R1/\u00a76: pre-response initial recommendation (no customer signal has been consumed yet)"
       }
     ],
     "final": [
@@ -156,5 +138,5 @@
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 11,
   "tokens": 0,
-  "latency_s": 86.46
+  "latency_s": 225.338
 }

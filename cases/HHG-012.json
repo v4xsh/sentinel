@@ -10,33 +10,7 @@
       "3553342"
     ],
     "first_suspicious_txn_id": "3553342",
-    "connected_card_ids": [
-      "C00969|246.0|150.0|visa|226.0|debit",
-      "C07212|514.0|150.0|visa|226.0|credit",
-      "C00197|174.0|150.0|visa|141.0|credit",
-      "C07585|361.0|150.0|visa|226.0|debit",
-      "C07612|583.0|150.0|visa|226.0|credit",
-      "C01983|321.0|150.0|visa|226.0|credit",
-      "C06224|583.0|150.0|visa|226.0|credit",
-      "C09165|111.0|150.0|mastercard|219.0|credit",
-      "C12887|499.0|150.0|visa|226.0|debit",
-      "C01974|555.0|150.0|visa|226.0|debit",
-      "C04164|225.0|150.0|mastercard|224.0|debit",
-      "C04108|514.0|150.0|mastercard|219.0|credit",
-      "C08466|404.0|150.0|visa|226.0|credit",
-      "C11716|543.0|150.0|mastercard|224.0|debit",
-      "C06631|_|150.0|visa|166.0|debit",
-      "C04125|321.0|150.0|visa|226.0|debit",
-      "C11464|111.0|150.0|visa|226.0|debit",
-      "C01689|555.0|150.0|visa|226.0|credit",
-      "C11309|583.0|150.0|visa|226.0|credit",
-      "C07311|111.0|150.0|visa|162.0|credit",
-      "C05375|_|150.0|visa|166.0|debit",
-      "C04965|490.0|150.0|visa|226.0|debit",
-      "C12690|417.0|150.0|visa|226.0|debit",
-      "C04476|555.0|150.0|visa|226.0|credit",
-      "C13302|399.0|150.0|american express|236.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [],
     "exposure_usd": 30.91,
     "evidence": [
@@ -126,18 +100,10 @@
         "source": "customer",
         "ref": "customer_response:denied",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.735.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3553342"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-012 has been evaluated with a high probability of fraud ($p = 0.96$). The investigation highlights significant risk driven by out-of-region usage, a card-present channel indicator, and a history of prior confirmed fraud on both the specific card tuple and the customer profile. Although historical graph comparators like CC-4349 typically clear when travel is verified, the risk here is compounded by prior confirmed fraud and the customer explicitly denying making the transaction. Consequently, the policy engine has triggered the immediate execution of blocking the card and creating a formal case.",
+    "summary": "Case HHG-012 has been evaluated as fraud with a calibrated probability of 0.96, driven by a combination of out-of-region activity, a card-present channel, and a strong history of confirmed fraud on both the card and the customer profile. Although the recurring transaction amount and baseline model score leaned toward clearing, concurrent home-region transactions and a prior confirmed fraud history heavily elevated the posterior risk. Crucially, the customer explicitly denied making the transaction, solidifying the fraudulent nature of the charge. Despite the retrieved historical cases involving cleared travel alerts, the customer's direct denial and malicious indicators override standard travel patterns in this instance. Consequently, the policy engine has executed the decision to block the card and create a case.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-012"
   },
@@ -185,6 +151,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 11,
-  "tokens": 1106,
-  "latency_s": 102.007
+  "tokens": 1204,
+  "latency_s": 259.367
 }

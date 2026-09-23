@@ -8,14 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C06630|500.0|185.0|mastercard|137.0|credit",
-      "C13372|459.0|185.0|mastercard|224.0|credit",
-      "C12680|405.0|185.0|visa|137.0|credit",
-      "C09657|545.0|185.0|visa|226.0|credit",
-      "C02545|459.0|185.0|mastercard|224.0|credit",
-      "C10837|130.0|185.0|visa|226.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "SM-G9650 Build/R16NW | - | chrome generic for android | -"
     ],
@@ -57,14 +50,6 @@
         "claim": "Vesta's `id_15` flag is 'New' \u2014 a first-seen-on-this-card device. In the labelled history this coincides more with cleared alerts (travel, new phone) than with confirmed fraud (model weight -4.93).",
         "source": "graph",
         "ref": "alert_model:id_15_new  (weight -4.932)",
-        "entity_ids": [
-          "3500526"
-        ]
-      },
-      {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
         "entity_ids": [
           "3500526"
         ]
@@ -136,5 +121,5 @@
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 10,
   "tokens": 0,
-  "latency_s": 106.673
+  "latency_s": 234.148
 }

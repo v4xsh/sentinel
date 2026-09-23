@@ -8,33 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C02375|399.0|150.0|american express|150.0|credit",
-      "C10434|258.0|150.0|visa|226.0|credit",
-      "C11951|562.0|150.0|mastercard|197.0|credit",
-      "C05245|100.0|150.0|visa|226.0|debit",
-      "C06224|583.0|150.0|visa|226.0|credit",
-      "C03218|321.0|150.0|visa|226.0|debit",
-      "C03100|555.0|150.0|visa|226.0|credit",
-      "C10422|537.0|150.0|mastercard|224.0|debit",
-      "C02354|490.0|150.0|visa|226.0|debit",
-      "C12690|417.0|150.0|visa|226.0|debit",
-      "C06270|399.0|150.0|american express|150.0|credit",
-      "C06220|562.0|150.0|visa|226.0|credit",
-      "C08918|111.0|150.0|visa|162.0|credit",
-      "C11309|583.0|150.0|visa|226.0|credit",
-      "C03040|583.0|150.0|visa|226.0|credit",
-      "C00854|170.0|150.0|mastercard|102.0|credit",
-      "C03185|399.0|150.0|american express|198.0|credit",
-      "C11677|252.0|150.0|visa|226.0|debit",
-      "C07997|170.0|150.0|visa|226.0|credit",
-      "C08489|170.0|150.0|visa|226.0|credit",
-      "C12942|264.0|150.0|visa|162.0|credit",
-      "C07878|453.0|150.0|american express|131.0|credit",
-      "C13001|490.0|150.0|visa|226.0|debit",
-      "C11000|514.0|150.0|mastercard|102.0|credit",
-      "C09241|321.0|150.0|visa|226.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "Windows | Windows 10 | edge 16.0 | 1366x768"
     ],
@@ -73,25 +47,9 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3506725"
-        ]
-      },
-      {
         "claim": "Amount is \u22653\u03c3 away from this card's typical spend (weight -2.60).",
         "source": "graph",
         "ref": "alert_model:amt_z_gt_3  (weight -2.597)",
-        "entity_ids": [
-          "3506725"
-        ]
-      },
-      {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
         "entity_ids": [
           "3506725"
         ]
@@ -114,7 +72,7 @@
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Analyst summary for case HHG-010 indicates a legitimate transaction with a calibrated fraud probability of 0.02. Although the online transaction originated from a new Windows 10 device on this card and the amount deviated significantly from typical spend, historical risk indicators leaned heavily toward clearance. Specifically, Vesta's first-seen device flag and the bank's top-decile score aligned with patterns historically associated with cleared alerts rather than confirmed fraud, similar to the cleared travel-related alert in case CC-0933. Consequently, the policy engine determined that no further fraud is present. Following this assessment, the system executed the decision to close the case as no fraud.",
+    "summary": "Case HHG-010 involves an online card-not-present transaction flagged under a new device pattern, featuring a Windows 10 environment on Edge. The identity flags and historical baseline strongly indicate legitimate behavior, as Vesta's `id_15` new device flag and the bank's 10/10 risk decile historically correlate more frequently with cleared travel alerts or new phone usage than confirmed fraud. Furthermore, although the transaction amount deviated significantly from the card's typical spend and occurred on the online channel, the broader historical context aligns with cleared false positives. The policy engine reviewed these signals, resulting in a calibrated fraud probability of 0.02. Consequently, the automated policy engine has decided to close the alert with no fraud detected, taking the action CLOSE_NO_FRAUD.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-010"
   },
@@ -146,6 +104,6 @@
   },
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 12,
-  "tokens": 1044,
-  "latency_s": 102.927
+  "tokens": 1121,
+  "latency_s": 229.166
 }

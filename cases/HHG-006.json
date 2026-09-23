@@ -5,15 +5,13 @@
     "verdict": "fraud",
     "fraud_probability": 0.8782,
     "pattern": "undocumented",
-    "pattern_description": "Case HHG-006 exhibits an undocumented fraud pattern involving an online transaction from a newly flagged device and an ATO shape consisting of four online transactions within a 48-hour window. Additionally, the activity features a threshold-structured burst of transactions just below $500, and the customer explicitly denies making the transaction. A similar prior case is CC-2947.",
+    "pattern_description": "Based on the ledger for case HHG-006, the transaction exhibits an undocumented fraud pattern characterized by a threshold-structured burst of three online transactions just below $500, alongside an amount that deviates significantly from the card's typical spend. Additionally, the customer explicitly denied making the transaction while using a newly flagged device via an IP proxy.",
     "affected_txn_ids": [
       "3476602",
       "3476682"
     ],
     "first_suspicious_txn_id": "3476602",
-    "connected_card_ids": [
-      "C07297|455.0|150.0|mastercard|126.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "Trident/7.0 | Windows 7 | ie 11.0 for desktop | 1920x1080"
     ],
@@ -90,14 +88,6 @@
         ]
       },
       {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3476682"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 8/10; among historical alerts this decile leans toward fraud (model weight +1.52).",
         "source": "graph",
         "ref": "alert_model:risk_decile_8  (weight +1.516)",
@@ -112,18 +102,10 @@
         "entity_ids": [
           "3476682"
         ]
-      },
-      {
-        "claim": "Posterior before customer contact: 0.448.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3476682"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-006 has been evaluated with a calibrated fraud probability of 0.88, driven by an undocumented pattern involving suspicious account takeover indicators and an online channel transaction. The evidence ledger highlights a threshold-structured burst of transactions just below $500, an amount falling significantly outside the card's typical spend, and a first-seen device tied to proxy usage. Furthermore, historical risk scoring placed the alert in decile 8/10, and the customer explicitly denied making the transaction, which aligns with prior confirmed fraud cases like CC-2947. In response to this verdict, the policy engine has triggered automated measures to block the card, create a case, file a report, and monitor connected cards.",
+    "summary": "Analysis of case HHG-006 indicates a high likelihood of fraud with a calibrated probability of 0.88, driven by several distinct risk factors across identity, device, and transaction behavior. The identity and device channels reveal an account takeover (ATO) shape characterized by four online transactions on a new device within a 48-hour window, alongside proxy IP usage and a device family showing a high hub-cap degree. Furthermore, the transaction sequence exhibits structuring behavior with a burst of three online transactions just below the $500 threshold, combined with an anomalous amount that deviates significantly from the card's typical spend and an online channel risk weight. Although the first-seen device flag and moderate model risk score presented mixed historical baselines, the customer explicitly denied making the transaction, solidifying the fraudulent nature of the activity. Consequently, the policy engine has triggered actions to block the card, create a case, file a report, and monitor connected cards.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-006"
   },
@@ -184,7 +166,7 @@
   "sar": {
     "file": true,
     "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented",
-    "narrative": "This Suspicious Activity Report details fraudulent online activity associated with Case ID HHG-006, resulting in an exposure of $961.07. The transaction originated from a newly flagged device utilizing Windows 7 and Internet Explorer 11 via an IP proxy, exhibiting Account Takeover (ATO) characteristics with four online transactions occurring within a 48-hour window. Further analysis revealed a threshold-structured burst pattern consisting of three online transactions positioned just below the $500 threshold, combined with an irregular transaction amount significantly deviating from the cardholder's typical spending baseline. The customer explicitly denied authorizing the transaction, prompting a definitive fraud verdict. Similar fraudulent activity is documented in prior case CC-2947, which involved confirmed unauthorized transactions and cardholder denial. The bank's risk model successfully flagged the activity, leading to immediate protective measures and the mitigation of further risk to the card.",
+    "narrative": "**Suspicious Activity Narrative (FinCEN Form 111)**\n\nCase ID HHG-006 involves unauthorized online account access and fraudulent transactional activity totaling an exposure of $961.07. The suspicious activity was identified following a threshold-structured burst of three online transactions executed just below the $500 threshold within a compressed timeframe, exhibiting a clear structuring shape. This activity coincided with four online transactions conducted within a 48-hour window on a device flagged as \"New\" (utilizing Trident/7.0 on Windows 7 with Internet Explorer 11.0), which also routed traffic through an IP proxy. Furthermore, the device family exhibited a high connectivity degree exceeding the hub cap threshold, and the transaction amounts deviated significantly by over three standard deviations from the cardholder's typical spending patterns. The customer explicitly denied authorizing these transactions upon contact. In response to the detected testing sequence and fraudulent indicators, the transaction was designated as fraud, and internal risk policies triggered verification and decline protocols consistent with L1 routing rules. No additional accounts or external entities are alleged beyond the scope of the ledger data supporting case HHG-006.",
     "subjects": [
       "C07297",
       "C07297-K1",
@@ -198,6 +180,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 12,
-  "tokens": 3296,
-  "latency_s": 107.524
+  "tokens": 3518,
+  "latency_s": 302.095
 }

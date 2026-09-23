@@ -10,33 +10,7 @@
       "3583227"
     ],
     "first_suspicious_txn_id": "3583227",
-    "connected_card_ids": [
-      "C13364|130.0|185.0|visa|195.0|debit",
-      "C03470|406.0|117.0|mastercard|166.0|debit",
-      "C07562|545.0|185.0|visa|137.0|credit",
-      "C02689|555.0|100.0|visa|102.0|credit",
-      "C05031|130.0|185.0|visa|138.0|debit",
-      "C06630|500.0|185.0|mastercard|137.0|credit",
-      "C06243|555.0|117.0|mastercard|224.0|debit",
-      "C11750|438.0|106.0|visa|226.0|debit",
-      "C13171|545.0|185.0|visa|102.0|credit",
-      "C13147|545.0|185.0|visa|195.0|credit",
-      "C04597|375.0|185.0|mastercard|224.0|debit",
-      "C11724|580.0|106.0|visa|137.0|credit",
-      "C07002|555.0|213.0|mastercard|166.0|debit",
-      "C12258|405.0|185.0|visa|226.0|credit",
-      "C09657|545.0|185.0|visa|226.0|credit",
-      "C00294|103.0|185.0|visa|226.0|debit",
-      "C11444|142.0|185.0|mastercard|224.0|debit",
-      "C06663|103.0|185.0|visa|138.0|debit",
-      "C12142|555.0|190.0|visa|226.0|debit",
-      "C02851|555.0|185.0|visa|226.0|credit",
-      "C08537|228.0|106.0|visa|137.0|credit",
-      "C06605|321.0|150.0|visa|226.0|credit",
-      "C01790|555.0|102.0|visa|226.0|debit",
-      "C05031|296.0|185.0|visa|138.0|debit",
-      "C08962|408.0|185.0|mastercard|224.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "- | - | firefox 47.0 | -"
     ],
@@ -97,14 +71,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3583227"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -129,14 +95,6 @@
         ]
       },
       {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3583227"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 9/10; among historical alerts this decile leans toward fraud (model weight +1.64).",
         "source": "graph",
         "ref": "alert_model:risk_decile_9  (weight +1.638)",
@@ -151,18 +109,10 @@
         "entity_ids": [
           "3583227"
         ]
-      },
-      {
-        "claim": "Posterior before customer contact: 0.772.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3583227"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Analyst review for case HHG-004 concludes that the transaction is fraudulent, driven by a high-risk online channel profile and a risk score in the 9th decile. The evidence shows that the transaction originated from a new, previously unseen device on the card, and both the card tuple and customer have prior confirmed-fraud history. These risk factors are further corroborated by the customer explicitly denying making the transaction. Similar historical cases, such as CC-4369, CC-4979, and CC-4300, confirm a matching pattern of fraudulent online purchases originating from new devices. Following the policy engine's determined verdict, the card will be blocked, a case created, a report filed, and connected cards monitored.",
+    "summary": "Case HHG-004 has been evaluated with a fraud verdict at a calibrated probability of 0.97, following the card-not-present new device pattern. The risk assessment was elevated by online channel activity, a high-risk model score in decile 9/10, prior confirmed fraud history on both this card and the customer's other cards, and an anomalous transaction amount. Additionally, the customer explicitly denied making the transaction. Similar confirmed fraud precedents in the network feature parallel card-not-present fraud characteristics involving unrecognized activity on new devices. In response to these findings, the policy engine has executed automated safeguards including blocking the card, creating a formal case, filing a report, and monitoring connected cards.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-004"
   },
@@ -183,7 +133,7 @@
       {
         "action": "VERIFY_WITH_CUSTOMER",
         "route": "auto",
-        "reason": "R1: verify before any block on unconfirmed fraud"
+        "reason": "R1/\u00a76: pre-response initial recommendation (no customer signal has been consumed yet)"
       },
       {
         "action": "CREATE_CASE",
@@ -218,7 +168,7 @@
   "sar": {
     "file": true,
     "reason": "R2 + \u00a73a: exposure>$1,000 or shared element/undocumented",
-    "narrative": "**SUSPICIOUS ACTIVITY REPORT NARRATIVE**\n\n**Case ID:** HHG-004  \n**Exposure Amount:** $128.33  \n\nInstitution detected suspicious card-not-present activity involving an online transaction totaling $128.33 processed via the online channel. The transaction was originated from a newly flagged device profile utilizing Firefox 47.0, which had not been previously observed on this card within the preceding 90 days. Risk analysis identified multiple elevated risk indicators, including a high model risk score placing the transaction in decile 9/10, an anomalous transaction amount deviating significantly from the cardholder's typical spend pattern, and historical fraud indicators associated with both the card tuple and the customer profile. \n\nFollowing the transaction, the customer was contacted and explicitly denied making or authorizing the purchase, settling the verdict as confirmed fraud. The card was subsequently protected to prevent further unauthorized exposure. This activity shares operational characteristics with prior confirmed fraud cases in the institution's records, notably Case CC-4369, Case CC-4979, and Case CC-4300, which similarly involved unauthorized card-not-present transactions executed from unrecognized online devices. No further investigative steps or actions are required at this time.",
+    "narrative": "Suspicious activity involving unauthorized card-not-present transactions was identified on the account under Case ID HHG-004, resulting in a financial exposure of $128.33. The fraudulent activity was conducted online utilizing a new and previously unrecognized device running Firefox 47.0. Risk analysis indicated that the transaction originated from a device family shared across multiple other cards, and the customer explicitly denied making the purchase. Furthermore, historical data revealed prior confirmed fraud cases associated with both this specific card tuple and the customer on different cards. The transaction amount deviated significantly from the card's typical spending patterns, elevating the risk score into the upper decile. Following customer contact and verification, the fraudulent nature of the transaction was established, and the verdict was finalized as fraud.",
     "subjects": [
       "C08106",
       "C08106-K1",
@@ -232,6 +182,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 10,
-  "tokens": 2975,
-  "latency_s": 113.779
+  "tokens": 2967,
+  "latency_s": 366.307
 }

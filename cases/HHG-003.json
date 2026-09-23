@@ -8,33 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C11522|181.0|150.0|visa|226.0|credit",
-      "C09557|555.0|150.0|visa|226.0|debit",
-      "C05905|258.0|150.0|visa|226.0|credit",
-      "C11000|514.0|150.0|mastercard|102.0|credit",
-      "C07518|583.0|150.0|visa|226.0|credit",
-      "C04196|583.0|150.0|visa|226.0|credit",
-      "C12512|208.0|150.0|mastercard|219.0|debit",
-      "C06220|562.0|150.0|visa|226.0|credit",
-      "C03047|174.0|150.0|visa|226.0|debit",
-      "C09692|555.0|150.0|mastercard|117.0|debit",
-      "C08918|111.0|150.0|visa|162.0|credit",
-      "C11005|111.0|150.0|visa|162.0|credit",
-      "C05761|512.0|150.0|mastercard|117.0|debit",
-      "C00750|327.0|150.0|discover|102.0|credit",
-      "C03278|404.0|150.0|mastercard|102.0|credit",
-      "C04798|158.0|150.0|visa|226.0|debit",
-      "C01982|494.0|150.0|visa|226.0|credit",
-      "C11797|555.0|150.0|visa|226.0|credit",
-      "C02716|583.0|150.0|visa|226.0|credit",
-      "C00889|111.0|150.0|visa|226.0|debit",
-      "C05600|399.0|150.0|american express|118.0|credit",
-      "C12897|583.0|150.0|visa|226.0|credit",
-      "C13456|489.0|150.0|mastercard|102.0|credit",
-      "C09165|111.0|150.0|mastercard|219.0|credit",
-      "C05704|170.0|150.0|visa|226.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [],
     "exposure_usd": 0.0,
     "evidence": [
@@ -132,18 +106,10 @@
         "source": "customer",
         "ref": "customer_response:confirmed",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.735.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3530164"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-003 was investigated as an out-of-region use pattern featuring an in-person charge in a billing region differing from the card's observed home region, though prior activity in this region and a dampener reduced the net regional impact. Historical risk indicators included a 10/10 model decile score, an alert-present channel weight, and prior confirmed fraud cases associated with both the card tuple and the customer. However, the recurring amount shape and prior cadence matched a legitimate-disputed profile, and the customer ultimately confirmed making the transaction. This mirrors prior confirmed fraud cases such as CC-2678 involving out-of-region use, but direct customer confirmation established the legitimate verdict with a calibrated probability of fraud of 0.15. Following this verification, the policy engine actions decided to create the case, verify with the customer, and warn the customer.",
+    "summary": "Case HHG-003 was flagged under the out_of_region_use pattern due to an in-person charge in a billing region differing from the card's home region, alongside a high risk score and prior confirmed fraud history on both the card and customer level. However, historical risk indicators were counterbalanced by positive recurring transaction history at the same amount and a prior dampening presence in that region. Crucially, direct customer contact resolved the uncertainty as the customer confirmed making the transaction themselves. Based on these findings, the calibrated probability of fraud settled at a low 0.15, resulting in a legitimate verdict. In accordance with the policy engine actions, the case was created, the customer was verified, and a warning was issued to the customer.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-003"
   },
@@ -201,6 +167,6 @@
   },
   "stop_reason": "Customer response (confirmed) settled the verdict.",
   "tool_calls": 11,
-  "tokens": 1375,
-  "latency_s": 102.851
+  "tokens": 1411,
+  "latency_s": 358.404
 }

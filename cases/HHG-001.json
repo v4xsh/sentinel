@@ -10,9 +10,7 @@
       "3514030"
     ],
     "first_suspicious_txn_id": "3514030",
-    "connected_card_ids": [
-      "C12382|242.0|150.0|visa|166.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [],
     "exposure_usd": 77.07,
     "evidence": [
@@ -102,18 +100,10 @@
         "source": "customer",
         "ref": "customer_response:denied",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.735.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3514030"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Analyst review of case HHG-001 concludes with a fraud verdict at a calibrated probability of 0.96, driven primarily by an out-of-region card-present transaction accompanied by a direct customer denial. The evidence ledger shows strong risk indicators, including prior confirmed fraud cases associated with both this specific card tuple and the broader customer profile, which heavily outweigh dampening factors like recurring amount history and a low-leaning baseline model decile. Although similar cleared cases such as CC-2367, CC-0443, and CC-4349 involved out-of-region cardholder travel, the explicit customer denial in this instance definitively settled the outcome against the cardholder. In accordance with the policy engine's determinations, the system has executed a card block and officially created a fraud case.",
+    "summary": "Analyst summary for case HHG-001:\n\nCase HHG-001 has been evaluated as fraud with a calibrated probability of 0.96. The investigation is driven by significant risk factors including an out-of-region in-person transaction coupled with a clone-shape pattern, card-present channel attributes, and a strong history of prior confirmed fraud on both the specific card tuple and the customer's alternate cards. Although the recurring amount history and the bank's model decile scoring suggested mitigating weight, these factors were heavily outweighed by historical risk and direct customer interaction. Specifically, the customer explicitly denied making the transaction during contact. Consequently, the policy engine has determined the next steps for case HHG-001, executing the necessary card block and case creation actions.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-001"
   },
@@ -161,6 +151,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 10,
-  "tokens": 1154,
-  "latency_s": 124.24
+  "tokens": 1212,
+  "latency_s": 144.34
 }

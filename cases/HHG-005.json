@@ -8,9 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C02923|507.0|150.0|visa|226.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "iOS Device | iOS 9.3.5 | mobile safari 9.0 | 1024x768"
     ],
@@ -57,22 +55,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3523199"
-        ]
-      },
-      {
-        "claim": "Purchaser email domain is new for this card (weight -0.15).",
-        "source": "graph",
-        "ref": "alert_model:unseen_p_emaildomain  (weight -0.150)",
-        "entity_ids": [
-          "3523199"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -97,14 +79,6 @@
         ]
       },
       {
-        "claim": "Amount is \u22652\u03c3 away from this card's typical spend (weight +0.43).",
-        "source": "graph",
-        "ref": "alert_model:amt_z_gt_2  (weight +0.430)",
-        "entity_ids": [
-          "3523199"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
@@ -122,7 +96,7 @@
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-005 involves an online card-not-present transaction initiated from a new iOS device flagged as first-seen on this card, alongside a purchaser email domain that is also new for the card. The historical evidence reveals that this card tuple and customer have prior confirmed fraud cases, and the transaction amount deviates significantly from typical spend while the bank's model scored it in the highest risk decile. Despite these risk indicators, the identity flag for the new device correlates more heavily with cleared alerts such as travel or a new phone in labelled history, and similar historical cases like CC-3475 similarly involved cleared alerts where cardholders confirmed travel. Balancing these signals resulted in a calibrated probability of fraud of just 0.02 and a legitimate verdict. In accordance with the policy engine's decision, the system will close the case with no fraud.",
+    "summary": "Analyst summary for case HHG-005: \n\nCase HHG-005 involves an online card-not-present transaction executed from a new mobile device running iOS 9.3.5 and Mobile Safari. Although the transaction features a purchaser email domain not previously seen on this card, an amount significantly outside the card's typical spend, and historical prior confirmed fraud on both this card and a different card belonging to the customer, several mitigating factors strongly support legitimacy. Specifically, Vesta's `id_15` flag indicates a first-seen device that historically coincides more frequently with cleared alerts like travel or new phone purchases rather than confirmed fraud, and the bank's model scored the transaction in the lowest risk decile (10/10). Furthermore, the device family belongs to a known device hub with suppressed ring-component signals, aligning with normal behavior patterns. Given the calibrated probability of fraud is extremely low at 0.02, the policy engine determined the risk was acceptable. Consequently, the final action decided by the policy engine for case HHG-005 is CLOSE_NO_FRAUD.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-005"
   },
@@ -154,6 +128,6 @@
   },
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 12,
-  "tokens": 1160,
-  "latency_s": 102.402
+  "tokens": 1291,
+  "latency_s": 331.498
 }

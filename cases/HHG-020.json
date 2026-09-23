@@ -15,6 +15,14 @@
     "exposure_usd": 0.0,
     "evidence": [
       {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $4,821,624 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3509359"
+        ]
+      },
+      {
         "claim": "Online txn from a device flagged New.  device_profile=Trident/7.0 | Windows 10 | ie 11.0 for desktop | 1920x1080",
         "source": "graph",
         "ref": "conjunctive-lr:new_device",
@@ -63,22 +71,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3509359"
-        ]
-      },
-      {
-        "claim": "Purchase category (`ProductCD`) is one this card had never used before (weight +0.21).",
-        "source": "graph",
-        "ref": "alert_model:unseen_productcd  (weight +0.206)",
-        "entity_ids": [
-          "3509359"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -111,19 +103,8 @@
         ]
       }
     ],
-    "similar_prior_cases": [
-      "CC-0487",
-      "CC-2367",
-      "CC-1447",
-      "CC-0443",
-      "CC-2277",
-      "CC-0852",
-      "CC-2447",
-      "CC-0933",
-      "CC-1399",
-      "CC-0397"
-    ],
-    "summary": "Case HHG-020 has been evaluated and determined to be legitimate, with a calibrated fraud probability of 0.07. The transaction occurred via the online channel on a first-seen device profile (Windows 10 with IE 11) using a product category the card had never used before. Although historical risk factors are present\u2014including prior confirmed fraud cases on both this card and a different card associated with the customer\u2014the specific combination of device characteristics and the high-decile baseline model score align more closely with cleared alerts than confirmed fraud. Consequently, this transaction presents an ATO shape of only one online transaction on a new device within a 48-hour window. The case will be closed with no fraud detected in accordance with the prescribed actions.",
+    "similar_prior_cases": [],
+    "summary": "Analyst summary for case HHG-020: The transaction occurred via the online channel on a first-seen device (Windows 10, IE 11) flagged as new, fitting a card-not-present new device pattern. Despite historical risk factors\u2014including prior confirmed fraud on this card and the customer's account, a new product category, and a top-decile risk score\u2014historical weights and graph context indicate that first-seen devices on this card align more frequently with legitimate activity like travel or new phones. The device graph also suppressed the ring-component signal because the device family exceeded the hub cap. Consequently, the calibrated probability of fraud is low at 0.07, and the alert was thoroughly reviewed for case HHG-020. The policy engine has decided to close the case with no fraud.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-020"
   },
@@ -154,7 +135,7 @@
     "activity_dates": []
   },
   "stop_reason": "No customer response was required; posterior converged.",
-  "tool_calls": 12,
-  "tokens": 834,
-  "latency_s": 39.178
+  "tool_calls": 13,
+  "tokens": 1317,
+  "latency_s": 119.152
 }

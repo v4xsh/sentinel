@@ -24,7 +24,7 @@ hallucinate, and we contained it.
 | FinCEN §3a policy encoding: SAR-decision replay | **4,665 / 4,665** confirmed-fraud rows (rule-encoding test) |
 | Mean latency per case (shared MCP session, LLM on) | **~5 s** |
 | Mean latency per case (REST fast-path, LLM off, backtest) | **2.5 s** |
-| pytest suite | **113 / 113** offline (I1–I13 + query contracts + SAR replay) |
+| pytest suite | **129 / 129** offline (I1–I13 + query contracts + SAR replay) |
 | Monitoring mode (Nov–Dec 2016 sweep, 15 alerts) | **7 fraud / 8 legitimate** in `cases_extra/` |
 | SentinelCase vertices in graph | **35** (20 benchmark + 15 monitoring) |
 
@@ -315,7 +315,7 @@ docs/               ARCHITECTURE, BENCHMARK_RESULTS, DEMO_SCRIPT,
                     DECISIONS, LEARNINGS, BLOG_DRAFT, SOCIAL_POST,
                     MCP_TRANSCRIPT_HHG-014, UNDOCUMENTED_FINDINGS,
                     SUBMISSION
-tests/              113 tests (I1–I13, query contracts, SAR replay)
+tests/              129 tests (I1–I13, query contracts, SAR replay, ask-first)
 ```
 
 ---

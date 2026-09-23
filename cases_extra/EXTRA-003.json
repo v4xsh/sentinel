@@ -8,33 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C08655|555.0|119.0|visa|137.0|credit",
-      "C00951|104.0|185.0|visa|226.0|credit",
-      "C03200|555.0|119.0|visa|226.0|debit",
-      "C07220|142.0|185.0|visa|226.0|credit",
-      "C10837|130.0|185.0|visa|226.0|credit",
-      "C06906|266.0|185.0|mastercard|102.0|credit",
-      "C09119|545.0|185.0|visa|226.0|credit",
-      "C11595|500.0|185.0|mastercard|224.0|credit",
-      "C11807|176.0|185.0|mastercard|102.0|credit",
-      "C00426|500.0|185.0|mastercard|102.0|credit",
-      "C13171|545.0|185.0|visa|102.0|credit",
-      "C07562|545.0|185.0|visa|137.0|credit",
-      "C01002|202.0|185.0|mastercard|137.0|credit",
-      "C05031|130.0|185.0|visa|138.0|debit",
-      "C12966|266.0|185.0|mastercard|224.0|credit",
-      "C11597|204.0|185.0|visa|226.0|credit",
-      "C03256|228.0|106.0|visa|147.0|credit",
-      "C02545|_|_|_|_|_",
-      "C12258|405.0|185.0|visa|226.0|credit",
-      "C07981|130.0|185.0|visa|102.0|credit",
-      "C04034|177.0|185.0|mastercard|137.0|credit",
-      "C11844|103.0|185.0|visa|137.0|credit",
-      "C05307|142.0|185.0|visa|138.0|debit",
-      "C02147|500.0|185.0|mastercard|224.0|credit",
-      "C06464|177.0|185.0|mastercard|224.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "ALP-L09 Build/HUAWEIALP-L09 | - | chrome 65.0 for android | -"
     ],
@@ -81,14 +55,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3469573"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -100,14 +66,6 @@
         "claim": "The customer has at least one prior confirmed-fraud case on a different card (weight +0.89).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_customer  (weight +0.895)",
-        "entity_ids": [
-          "3469573"
-        ]
-      },
-      {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
         "entity_ids": [
           "3469573"
         ]
@@ -163,5 +121,5 @@
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 10,
   "tokens": 0,
-  "latency_s": 106.292
+  "latency_s": 265.589
 }

@@ -10,14 +10,20 @@
       "3534820"
     ],
     "first_suspicious_txn_id": "3534820",
-    "connected_card_ids": [
-      "C09988|228.0|106.0|visa|226.0|debit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "Windows | - | edge 16.0 | -"
     ],
     "exposure_usd": 59.67,
     "evidence": [
+      {
+        "claim": "Ring-WCC (BFS-fixpoint over the card\u2013device projection, device-degree cap 100): component contains 5487 cards across 9199 narrow devices after 5 iterations, $5,004,925 in-window transaction volume.",
+        "source": "graph",
+        "ref": "query:ring_wcc",
+        "entity_ids": [
+          "3534820"
+        ]
+      },
       {
         "claim": "Online txn from a device flagged New.  device_profile=Windows | - | edge 16.0 | -",
         "source": "graph",
@@ -65,14 +71,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3534820"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 9/10; among historical alerts this decile leans toward fraud (model weight +1.64).",
         "source": "graph",
         "ref": "alert_model:risk_decile_9  (weight +1.638)",
@@ -87,18 +85,10 @@
         "entity_ids": [
           "3534820"
         ]
-      },
-      {
-        "claim": "Posterior before customer contact: 0.875.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3534820"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-016 has been evaluated as fraud with a calibrated probability of 0.98, driven primarily by online channel risk and an elevated risk score in decile 9/10, despite the Vesta device flag initially leaning toward cleared alerts. The customer explicitly denied making this transaction, solidifying the fraudulent nature of the activity. Similar historical fraud cases such as CC-4369, CC-0945, and CC-4979 share the same card-not-present, new-device pattern involving unrecognized online purchases. Based on these findings, the policy engine has executed the decisions to block the card and create a formal case.",
+    "summary": "Analyst summary for case HHG-016:\n\nThis online card-not-present transaction triggered a high-risk score in the 9th decile and was evaluated under the `card_not_present_new_device` pattern due to activity originating from a first-seen device using the Edge browser. Although the specific device is part of a massive fraud ring involving thousands of cards and millions in transaction volume, its individual hub-cap signal was suppressed because the family degree exceeded the threshold. The risk assessment was further solidified when the customer explicitly contacted the bank to deny making the transaction. Similar historical cases tied to this pattern consistently point to confirmed fraudulent activity on unrecognized devices. Consequently, the policy engine has executed the decision to block the card and create a formal case to prevent further losses.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-016"
   },
@@ -114,12 +104,12 @@
       {
         "action": "BLOCK_CARD",
         "route": "L1",
-        "reason": "R2/R6: confirmed fraud \u2014 block + reissue"
+        "reason": "\u00a76: posterior \u2265 0.85 on \u22652 independent channels before customer contact"
       },
       {
         "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "R2: confirmed fraud \u2014 open case"
+        "reason": "R1/\u00a76: pre-response initial recommendation (no customer signal has been consumed yet)"
       }
     ],
     "final": [
@@ -145,7 +135,7 @@
     "activity_dates": []
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
-  "tool_calls": 10,
-  "tokens": 1287,
-  "latency_s": 103.215
+  "tool_calls": 11,
+  "tokens": 1450,
+  "latency_s": 122.615
 }

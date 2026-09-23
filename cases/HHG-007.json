@@ -10,33 +10,7 @@
       "3514948"
     ],
     "first_suspicious_txn_id": "3514948",
-    "connected_card_ids": [
-      "C11965|119.0|150.0|visa|195.0|credit",
-      "C00750|327.0|150.0|discover|223.0|credit",
-      "C05704|170.0|150.0|visa|226.0|credit",
-      "C12942|264.0|150.0|visa|162.0|credit",
-      "C00796|170.0|150.0|visa|195.0|credit",
-      "C00094|445.0|150.0|mastercard|224.0|debit",
-      "C01493|272.0|150.0|visa|177.0|debit",
-      "C11159|181.0|150.0|visa|195.0|credit",
-      "C08482|501.0|150.0|visa|226.0|debit",
-      "C04848|399.0|150.0|american express|118.0|credit",
-      "C12865|174.0|150.0|visa|195.0|credit",
-      "C01154|529.0|150.0|visa|162.0|credit",
-      "C02872|161.0|150.0|mastercard|203.0|credit",
-      "C06224|583.0|150.0|visa|226.0|credit",
-      "C09664|399.0|150.0|american express|150.0|credit",
-      "C11203|321.0|150.0|visa|226.0|debit",
-      "C08989|181.0|150.0|visa|226.0|credit",
-      "C02716|583.0|150.0|visa|226.0|credit",
-      "C12094|215.0|150.0|visa|226.0|debit",
-      "C13005|399.0|150.0|american express|102.0|credit",
-      "C06947|111.0|150.0|visa|226.0|credit",
-      "C04097|555.0|150.0|mastercard|117.0|debit",
-      "C05360|399.0|150.0|american express|150.0|credit",
-      "C10930|474.0|150.0|mastercard|117.0|debit",
-      "C11513|216.0|150.0|visa|195.0|credit"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [],
     "exposure_usd": 111.92,
     "evidence": [
@@ -109,18 +83,10 @@
         "source": "customer",
         "ref": "customer_response:denied",
         "entity_ids": []
-      },
-      {
-        "claim": "Posterior before customer contact: 0.755.",
-        "source": "graph",
-        "ref": "alert_model:__pre_response_p__",
-        "entity_ids": [
-          "3514948"
-        ]
       }
     ],
     "similar_prior_cases": [],
-    "summary": "Case HHG-007 has been adjudicated as fraud with a calibrated probability of 0.97, following an account_takeover pattern driven by suspicious identity flags showing two online transactions on a newly established identifier within a 48-hour window. Historical evidence heavily supports this conclusion, noting prior confirmed fraud cases on both this card tuple and another card held by the customer, despite a contradictory recurring cadence history and a low baseline risk decile score. Although similar prior cases like CC-1022 involved cleared alerts due to verified cardholder travel, the customer in this instance explicitly denies making the transaction. Consequently, the policy engine has triggered the necessary interventions, resulting in the card being blocked and a formal case being created.",
+    "summary": "Analyst review for case HHG-007 indicates a confirmed fraud verdict driven by an account takeover pattern, yielding a calibrated fraud probability of 0.97. The transaction exhibits classic compromise indicators, including multiple online transactions on a newly established identifier within a tight forty-eight-hour window, combined with prior confirmed fraud history on both the specific card tuple and a separate card associated with the customer. Furthermore, the cardholder explicitly denies making the transaction, directly contradicting the recurring cadence and in-person channel history. Although retrieved historical comparables demonstrate cleared alerts involving verified travel, the overwhelming risk indicators in this instance override baseline model decile scoring. Consequently, the policy engine has enforced the necessary protective measures by executing a card block and creating a formal case for HHG-007.",
     "written_to_graph": true,
     "graph_case_id": "CASE-HHG-007"
   },
@@ -168,6 +134,6 @@
   },
   "stop_reason": "Customer response (denied) settled the verdict.",
   "tool_calls": 11,
-  "tokens": 998,
-  "latency_s": 102.05
+  "tokens": 1094,
+  "latency_s": 271.388
 }

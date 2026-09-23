@@ -32,8 +32,9 @@ WINDOW = {
 
 @pytest.fixture(scope="module")
 def u1_reference_tuple_ids() -> set[str]:
-    con = connect(read_only=False)
-    build_all(con)
+    # Features are already built by test_features's session-scoped fixture.
+    # Open read-only so we can coexist with its R/O handle without a lock war.
+    con = connect(read_only=True)
     ids = con.execute(
         f"""
         WITH cc AS (

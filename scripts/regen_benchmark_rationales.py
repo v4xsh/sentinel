@@ -121,11 +121,25 @@ def _sar_block(answers: list[dict]) -> str:
     return "\n\n".join(lines) + "\n"
 
 
+def _ask_first_cases(answers: list[dict]) -> list[str]:
+    """Cases with non-empty evidence_requests AND initial ≠ final."""
+    out = []
+    for a in answers:
+        if not (a.get("evidence_requests") or []):
+            continue
+        ini = [x["action"] for x in a["next_best_actions"]["initial"]]
+        fin = [x["action"] for x in a["next_best_actions"]["final"]]
+        if ini != fin:
+            out.append(a["case_id"])
+    return out
+
+
 def main() -> int:
     answers = _load()
     if len(answers) != 20:
         print(f"WARNING: expected 20 cases, found {len(answers)}")
     fraud, legit, unc, sar = _summary(answers)
+    ask_first = _ask_first_cases(answers)
 
     lines: list[str] = []
     lines.append("# 20-case benchmark — results\n")
@@ -139,7 +153,13 @@ def main() -> int:
     lines.append("## Summary\n")
     lines.append(f"- {fraud} fraud, {legit} legitimate, {unc} uncertain")
     lines.append(f"- {sar} SAR filing" + ("s" if sar != 1 else ""))
-    lines.append("- All 20 answer files pass invariants I1-I11\n")
+    lines.append("- All 20 answer files pass invariants I1–I13\n")
+    lines.append(f"**Ask-first cases** (non-empty `evidence_requests` with "
+                 f"initial ≠ final — the R1/§6 verify → response → re-decide "
+                 f"branch): {', '.join(ask_first) if ask_first else '*none*'}. "
+                 f"These are the cases the demo video opens on: the agent "
+                 f"decides to ask the customer, the response drives §6 to a "
+                 f"settled verdict, and the action list changes accordingly.\n")
     lines.append("## Case table\n")
     lines.append("| case | trigger | verdict | p_i → p_f | pattern | exposure "
                  "| evidence request (assumed response) | initial → final actions "

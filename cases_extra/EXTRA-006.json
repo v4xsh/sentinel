@@ -8,9 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C07212|_|_|_|_|_"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "Windows | Windows 10 | edge 16.0 | 1366x768"
     ],
@@ -81,22 +79,6 @@
         ]
       },
       {
-        "claim": "The card had both online and in-person activity in the 24 hours before this transaction (weight -0.22).",
-        "source": "graph",
-        "ref": "alert_model:mixed_channel_last_24h  (weight -0.220)",
-        "entity_ids": [
-          "3524594"
-        ]
-      },
-      {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
-        "entity_ids": [
-          "3524594"
-        ]
-      },
-      {
         "claim": "The bank's model scored this transaction in decile 10/10; among historical alerts this decile leans toward cleared (model weight -4.54).",
         "source": "graph",
         "ref": "alert_model:risk_decile_10  (weight -4.538)",
@@ -147,5 +129,5 @@
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 12,
   "tokens": 0,
-  "latency_s": 106.439
+  "latency_s": 293.746
 }

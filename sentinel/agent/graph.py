@@ -283,6 +283,10 @@ def _fetch_graph_signals(state: AgentState) -> None:
         "p_card": {"id": card_pk}, "p_window_start": ws, "p_window_end": we,
         "p_degree_cap": 100, "p_expand_family": True,
     }))
+    jobs.append(("ring_wcc", {
+        "p_card": {"id": card_pk}, "p_window_start": ws, "p_window_end": we,
+        "p_degree_cap": 100, "p_max_iter": 8,
+    }))
     jobs.append(("near_threshold_burst", {
         "p_card": {"id": card_pk}, "p_window_start": ws, "p_window_end": we,
         "p_threshold": 500.0, "p_min_count": 3,
@@ -381,6 +385,40 @@ def _fetch_graph_signals(state: AgentState) -> None:
             "n_other_new_or_proxied_in_window": n_other_new_proxied,
             "n_other_cards_with_fraud_cc": n_other_fraud_cc,
         }
+
+    # ---- ring_wcc (custom BFS-fixpoint algo, graph/algorithms/wcc.py) ----
+    wcc_body = by_name.get("ring_wcc", {})
+    if not wcc_body.get("error"):
+        merged: dict = {}
+        for it in wcc_body.get("results", []):
+            merged.update({k.lstrip("@"): v for k, v in it.items()})
+        # Only surface if BFS actually did work (iterations > 0) — otherwise
+        # the seed has no in-window activity and there's nothing to report.
+        if int(merged.get("iterations", 0) or 0) > 0:
+            wcc = {
+                "component_id":           merged.get("component_id", ""),
+                "size":                   int(merged.get("size", 0) or 0),
+                "n_devices":              int(merged.get("n_devices", 0) or 0),
+                "iterations":             int(merged.get("iterations", 0) or 0),
+                "component_exposure_usd": float(merged.get("component_exposure_usd", 0.0) or 0.0),
+                "component_n_txns":       int(merged.get("component_n_txns", 0) or 0),
+            }
+            state["graph_signals"]["ring_wcc"] = wcc
+            # One evidence entry per case — analyst-visible in the answer file.
+            state["ledger"].add(Evidence(
+                claim=(f"Ring-WCC (BFS-fixpoint over the card–device projection, "
+                       f"device-degree cap 100): component contains "
+                       f"{wcc['size']} cards across {wcc['n_devices']} narrow "
+                       f"devices after {wcc['iterations']} iterations, "
+                       f"${wcc['component_exposure_usd']:,.0f} in-window "
+                       f"transaction volume."),
+                source="graph",
+                ref="query:ring_wcc",
+                entity_ids=[state["txn_id"]],
+                channel="device",
+                log_lr=0.0,
+                direction="neutral",
+            ))
 
     # ---- near_threshold_burst ----
     b = by_name.get("near_threshold_burst", {})

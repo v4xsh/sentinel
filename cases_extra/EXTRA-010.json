@@ -8,9 +8,7 @@
     "pattern_description": "",
     "affected_txn_ids": [],
     "first_suspicious_txn_id": "",
-    "connected_card_ids": [
-      "C01155|_|_|_|_|_"
-    ],
+    "connected_card_ids": [],
     "connected_device_profiles": [
       "iOS Device | iOS 11.3.0 | mobile safari generic | 2436x1125"
     ],
@@ -57,14 +55,6 @@
         ]
       },
       {
-        "claim": "Computed 'new device on this card' \u2014 the device wasn't seen on the card in the prior 90 days (weight -0.12).",
-        "source": "graph",
-        "ref": "alert_model:is_new_device_for_card  (weight -0.124)",
-        "entity_ids": [
-          "3435614"
-        ]
-      },
-      {
         "claim": "This card tuple has at least one prior *confirmed fraud* case closed before this transaction (weight +0.55).",
         "source": "graph",
         "ref": "alert_model:prior_fraud_on_card_tuple  (weight +0.549)",
@@ -81,25 +71,9 @@
         ]
       },
       {
-        "claim": "The card had both online and in-person activity in the 24 hours before this transaction (weight -0.22).",
-        "source": "graph",
-        "ref": "alert_model:mixed_channel_last_24h  (weight -0.220)",
-        "entity_ids": [
-          "3435614"
-        ]
-      },
-      {
         "claim": "Card has \u22653 prior transactions at the same ProductCD and amount (\u00b1$0.02) \u2014 recurring shape (weight +0.68).",
         "source": "graph",
         "ref": "alert_model:recurring_ge3  (weight +0.679)",
-        "entity_ids": [
-          "3435614"
-        ]
-      },
-      {
-        "claim": "Card had \u22655 online transactions in the last 48 hours (weight +0.13).",
-        "source": "graph",
-        "ref": "alert_model:n_online_48h_ge_5  (weight +0.134)",
         "entity_ids": [
           "3435614"
         ]
@@ -155,5 +129,5 @@
   "stop_reason": "No customer response was required; posterior converged.",
   "tool_calls": 12,
   "tokens": 0,
-  "latency_s": 108.476
+  "latency_s": 295.827
 }

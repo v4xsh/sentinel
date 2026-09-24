@@ -87,23 +87,31 @@ def get_timeline(case_id: str) -> dict:
     }
 
 
+# Hub cap matches the agent's device_neighbors call
+# (sentinel/agent/graph.py — p_degree_cap=100). Above this, the device is
+# treated as a common browser hub and ring signals are suppressed.
+HUB_DEGREE_CAP = 100
+# Cosmetic max nodes drawn — caption reports "showing K of N" when capped.
+MAX_PEER_CARDS = 40
+MAX_CC_NODES = 8
+
+
 @app.get("/api/cases/{case_id}/graph")
 def get_graph(case_id: str) -> dict:
-    """Force-layout neighbourhood built live from TigerGraph.
+    """Force-layout neighbourhood, live from TigerGraph.
 
-    Given the flagged txn for ``case_id``, look up its device_profile
-    (via DuckDB's txn_features), then call the installed
-    ``device_neighbors`` GSQL query for the ±14-day window. Emit:
+    Given the case's flagged txn:
+      1. resolve its device_profile (DuckDB txn_features);
+      2. call the installed ``device_neighbors`` GSQL query with the
+         SAME hub cap (100) the agent uses — if the device is a hub,
+         return case + device only with an explanatory caption;
+      3. otherwise draw case (red), device (yellow), peer cards (blue,
+         de-duplicated), and confirmed-fraud ClosedCases attached to
+         the device (purple). Cards whose tuple matches a confirmed
+         fraud ClosedCase's card get a red outline.
 
-      * one **case** node (red)  — the current case
-      * one **device** node (yellow) — the shared device
-      * up to 40 **card** nodes (blue) — cards that transacted on that
-        device in-window; cards that carry a confirmed-fraud ClosedCase
-        on this device get a red outline (``has_fraud_cc: true``)
-      * up to 8 **closed_case** nodes (purple) — confirmed-fraud
-        ClosedCases attached to the device
-
-    Caption fields: ``device_profile``, ``n_other_cards``, ``n_fraud_ccs``.
+    Caption counts always come from the SAME query that draws the
+    graph, so they cannot diverge from what appears on screen.
     """
     d = get_case(case_id)
     case_verdict = d["case"]["verdict"]
@@ -118,9 +126,10 @@ def get_graph(case_id: str) -> dict:
         from sentinel.data.features import connect
         from sentinel.graph.client import TGClient
         from sentinel.config import TG_GRAPHNAME
+        from sentinel.agent.id_resolver import card_tuple_id as _tup_resolve
         import csv as _csv
 
-        # 1. Flagged txn → device_profile (via txn_features).
+        # 1. Flagged txn → device_profile.
         with open(REPO_ROOT / "data" / "raw" / "case_pack.csv") as _f:
             rec = next((r for r in _csv.DictReader(_f) if r["case_id"] == case_id), None)
         opened_at = rec["opened_at"] if rec else "2016-11-01 00:00:00"
@@ -136,118 +145,194 @@ def get_graph(case_id: str) -> dict:
         if not device_profile:
             return {"case_id": case_id, "nodes": nodes, "edges": edges,
                     "caption": "no device_profile on the flagged txn "
-                               "(offline / non-online alert)"}
+                               "(offline / non-online alert)",
+                    "device_profile": None, "is_hub": False,
+                    "n_cards_all_time": 0, "n_other_cards_in_window": 0,
+                    "n_confirmed_fraud_ccs": 0}
 
-        # 2. Live device_neighbors query.
+        # 2. Device node up-front — every non-empty branch uses it.
+        dev_label = (device_profile or "")[:36]
+        dev_nid = f"device:{device_profile[:48]}"
+
         end = datetime.strptime(opened_at, "%Y-%m-%d %H:%M:%S")
         start = end - timedelta(days=14)
+
+        # 3. Two calls to device_neighbors: one at cap=5000 to learn the
+        #    all-time device population size (n_cards_all_time is bounded
+        #    only by the cap in the query — a hub device would still
+        #    report accurately here). One at cap=100 (agent parity) to
+        #    know whether the ring signal fires; when the ring fires,
+        #    that call is also our peer-card list.
         cli = TGClient()
         try:
-            # Bigger cap than the policy path uses: the graph view is analyst
-            # context, not a decision signal. We want to show real device-family
-            # neighbourhoods (SM-G935F etc.) that carry >100 all-time cards.
-            r = cli.restpp_post(
+            body_common = {
+                "p_device":       {"id": device_profile},
+                "p_window_start": start.strftime("%Y-%m-%d %H:%M:%S"),
+                "p_window_end":   end.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            r_full = cli.restpp_post(
                 f"query/{TG_GRAPHNAME}/device_neighbors",
-                {
-                    "p_device":       {"id": device_profile},
-                    "p_window_start": start.strftime("%Y-%m-%d %H:%M:%S"),
-                    "p_window_end":   end.strftime("%Y-%m-%d %H:%M:%S"),
-                    "p_degree_cap":   5000,
-                },
+                {**body_common, "p_degree_cap": 5000},
+            )
+            r_agent = cli.restpp_post(
+                f"query/{TG_GRAPHNAME}/device_neighbors",
+                {**body_common, "p_degree_cap": HUB_DEGREE_CAP},
             )
         finally:
             cli.close()
 
-        # Merge accumulators. Fields can be bare v_id strings (SetAccum
-        # of VERTEX serialised without attributes) or {v_id, attributes}
-        # objects — handle both.
-        merged: dict = {}
-        for row in r.get("results", []):
-            for k, v in row.items():
-                merged[k.lstrip("@")] = v
+        def _merge(resp):
+            m: dict = {}
+            for row in (resp.get("results") or []):
+                for k, v in row.items():
+                    m[k.lstrip("@")] = v
+            return m
 
+        m_full  = _merge(r_full)
+        m_agent = _merge(r_agent)
+        n_cards_all_time = int(m_full.get("n_cards_all_time") or 0)
+
+        # 4. Hub case — matches agent behaviour: no ring signal.
+        if n_cards_all_time > HUB_DEGREE_CAP:
+            nodes.append({"id": dev_nid, "label": dev_label, "type": "device"})
+            edges.append({"source": case_id, "target": dev_nid, "label": "ON_DEVICE"})
+            return {
+                "case_id": case_id, "nodes": nodes, "edges": edges,
+                "caption": (f"Common device profile shared by "
+                            f"{n_cards_all_time} cards; not treated as a "
+                            f"ring signal (hub cap = {HUB_DEGREE_CAP})."),
+                "device_profile":         device_profile,
+                "is_hub":                 True,
+                "n_cards_all_time":       n_cards_all_time,
+                "n_other_cards_in_window": 0,
+                "n_confirmed_fraud_ccs":  0,
+            }
+
+        # 5. Below the cap — agent path fires. Use r_agent's cards (same
+        #    call agent stores in graph_signals.device_neighbors) so the
+        #    counts here match the evidence exactly.
         def _vid(x):
             return x if isinstance(x, str) else (x.get("v_id") if isinstance(x, dict) else None)
-        def _attrs(x):
-            return x.get("attributes", {}) if isinstance(x, dict) else {}
 
-        peer_cards   = [c for c in (merged.get("cards_in_window") or []) if _vid(c)]
-        closed_cases = [c for c in (merged.get("closed_cases_on_device") or []) if _vid(c)]
+        seed_tuple = _tup_resolve(rec["card_id"]) if rec else ""
+        peer_tuples: list[str] = []
+        seen_tuples: set[str] = set()
+        for c in (m_agent.get("cards_in_window") or []):
+            v = _vid(c)
+            if not v or v == seed_tuple or v in seen_tuples:
+                continue
+            peer_tuples.append(v); seen_tuples.add(v)
 
-        # 3. Device node + case→device edge.
-        dev_label = (device_profile or "")[:36]
-        dev_nid = f"device:{device_profile[:48]}"
+        cc_ids: list[str] = []
+        seen_cc: set[str] = set()
+        for cc in (m_agent.get("closed_cases_on_device") or []):
+            v = _vid(cc)
+            if v and v not in seen_cc:
+                cc_ids.append(v); seen_cc.add(v)
+
+        # 6. Fraud peer tuples: resolve each CC's card_id (display form)
+        #    from the CSV → tuple form.
+        fraud_ccs: list[dict] = []
+        fraud_peer_tuples: set[str] = set()
+        cc_csv = REPO_ROOT / "data" / "raw" / "closed_cases_history.csv"
+        if cc_csv.exists() and cc_ids:
+            cc_set = set(cc_ids)
+            with open(cc_csv) as _f:
+                for row in _csv.DictReader(_f):
+                    if row["case_id"] in cc_set and row.get("outcome") == "confirmed_fraud":
+                        display = row.get("card_id") or ""
+                        tup = _tup_resolve(display) if display else ""
+                        fraud_peer_tuples.add(tup)
+                        fraud_ccs.append({
+                            "case_id":       row["case_id"],
+                            "card_tuple_id": tup,
+                            "card_display":  display,
+                        })
+
+        # 7. Resolve peer tuple → display card_id via DuckDB card_map.
+        display_by_tuple: dict[str, str] = {}
+        if peer_tuples:
+            con = connect()
+            placeholders = ",".join("?" * len(peer_tuples))
+            rows = con.execute(
+                f"""SELECT customer_id || '|' || c2 || '|' || c3 || '|' ||
+                            c4 || '|' || c5 || '|' || c6 AS tup, card_id
+                     FROM card_map WHERE tup IN ({placeholders})""",
+                peer_tuples,
+            ).fetchall()
+            display_by_tuple = {t: cid for t, cid in rows}
+
+        # 8. Emit case → device → peer-card edges (dedup by tuple).
         nodes.append({"id": dev_nid, "label": dev_label, "type": "device"})
         edges.append({"source": case_id, "target": dev_nid, "label": "ON_DEVICE"})
 
-        # 4. Fraud peer tuples: look up each ClosedCase's card_tuple_id from
-        #    the CSV so we can outline the right cards red.
-        from sentinel.agent.id_resolver import card_tuple_id as _tup_resolve
-        cc_id_set = {_vid(cc) for cc in closed_cases}
-        fraud_peer_tuples: set[str] = set()
-        fraud_ccs: list[dict] = []       # list of (case_id, card_tuple_id, outcome)
-        cc_csv = REPO_ROOT / "data" / "raw" / "closed_cases_history.csv"
-        if cc_csv.exists() and cc_id_set:
-            with open(cc_csv) as _f:
-                for row in _csv.DictReader(_f):
-                    if row["case_id"] in cc_id_set:
-                        if row.get("outcome") == "confirmed_fraud":
-                            # CSV stores display form (C09998-K1); resolve
-                            # to the pipe-separated tuple that matches the
-                            # cards_in_window vertex ids.
-                            display = row.get("card_id") or ""
-                            tup = _tup_resolve(display) if display else ""
-                            fraud_peer_tuples.add(tup)
-                            fraud_ccs.append({
-                                "case_id":       row["case_id"],
-                                "card_tuple_id": tup,
-                                "card_display":  display,
-                            })
-
-        # 5. Card nodes (skip the seed's own tuple).
-        from sentinel.agent.id_resolver import card_tuple_id as _tup
-        seed_tuple = _tup(rec["card_id"]) if rec else ""
-        card_added = 0
-        for c in peer_cards:
-            v_id = _vid(c)
-            if not v_id or v_id == seed_tuple:
+        n_other_full = len(peer_tuples)                 # true count from query
+        drawn_peers = 0
+        added_ids: set[str] = set()
+        for tup in peer_tuples[:MAX_PEER_CARDS]:
+            nid = f"card:{tup[:48]}"
+            if nid in added_ids:                        # DOM-level dedup
                 continue
-            attrs = _attrs(c)
-            display = attrs.get("card_id_display") or (v_id.split("|")[0] + "-K?")
-            has_fraud = v_id in fraud_peer_tuples
+            added_ids.add(nid)
+            display = display_by_tuple.get(tup) or tup.split("|", 1)[0]
             nodes.append({
-                "id":           f"card:{v_id[:48]}",
+                "id":           nid,
                 "label":        display,
                 "type":         "card",
-                "has_fraud_cc": has_fraud,
+                "has_fraud_cc": tup in fraud_peer_tuples,
             })
-            edges.append({"source": dev_nid, "target": f"card:{v_id[:48]}",
-                           "label": "USED"})
-            card_added += 1
-            if card_added >= 40:
-                break
+            edges.append({"source": dev_nid, "target": nid, "label": "USED"})
+            drawn_peers += 1
 
-        # 6. ClosedCase nodes (purple), edge device → cc.
-        for cc in fraud_ccs[:8]:
-            nodes.append({
-                "id":     f"cc:{cc['case_id']}",
-                "label":  cc["case_id"],
-                "type":   "closed_case",
-            })
-            edges.append({"source": dev_nid, "target": f"cc:{cc['case_id']}",
-                           "label": "CC_ON_DEVICE"})
+        # 9. ClosedCase nodes.
+        for cc in fraud_ccs[:MAX_CC_NODES]:
+            nid = f"cc:{cc['case_id']}"
+            if nid in added_ids:
+                continue
+            added_ids.add(nid)
+            nodes.append({"id": nid, "label": cc["case_id"], "type": "closed_case"})
+            edges.append({"source": dev_nid, "target": nid, "label": "CC_ON_DEVICE"})
 
+        # 10. Caption reads from the SAME query that drew the graph.
+        #     If the case's evidence quotes a different "N other cards" number
+        #     (typically from ring_components with p_expand_family=True which
+        #     follows device_family, not the exact device_profile), footnote
+        #     the discrepancy so the reader sees why the numbers differ.
         n_fraud_ccs = len(fraud_ccs)
-        n_other = card_added
-        caption = (f"Shared device `{dev_label}`: {n_other} other card"
-                   f"{'s' if n_other != 1 else ''} in the ±14-day window, "
-                   f"{n_fraud_ccs} with a confirmed-fraud ClosedCase attached "
-                   f"to this device.")
-    except Exception as e:  # noqa: BLE001
-        caption = f"live TG query failed: {type(e).__name__}: {str(e)[:120]}"
+        import re as _re
+        ev_n_other = None
+        for e in (d["case"].get("evidence") or []):
+            m = _re.search(r"(\d+)\s+other\s+cards?\s+in\s+window",
+                            (e.get("claim") or ""))
+            if m:
+                ev_n_other = int(m.group(1)); break
+        pieces = [f"Shared device `{dev_label}`: {n_other_full} other card"
+                  f"{'s' if n_other_full != 1 else ''} in the ±14-day window, "
+                  f"{n_fraud_ccs} with a confirmed-fraud ClosedCase attached "
+                  f"to this device."]
+        if drawn_peers < n_other_full:
+            pieces.append(f" Showing {drawn_peers} of {n_other_full} cards "
+                          f"(cap for readability).")
+        if ev_n_other is not None and ev_n_other != n_other_full:
+            pieces.append(f" (Case evidence quotes {ev_n_other}; that number "
+                          f"comes from ring_components with device_family "
+                          f"expansion — a broader neighbourhood. This graph "
+                          f"shows only the exact same device_profile.)")
+        caption = "".join(pieces)
 
-    return {"case_id": case_id, "nodes": nodes, "edges": edges,
-            "caption": caption, "device_profile": device_profile}
+        return {
+            "case_id": case_id, "nodes": nodes, "edges": edges,
+            "caption": caption,
+            "device_profile":          device_profile,
+            "is_hub":                  False,
+            "n_cards_all_time":        n_cards_all_time,
+            "n_other_cards_in_window": n_other_full,
+            "n_confirmed_fraud_ccs":   n_fraud_ccs,
+        }
+    except Exception as e:  # noqa: BLE001
+        return {"case_id": case_id, "nodes": nodes, "edges": edges,
+                "caption": f"live TG query failed: {type(e).__name__}: {str(e)[:120]}",
+                "device_profile": device_profile}
 
 
 def _hhg_card_id(answer: dict) -> str | None:

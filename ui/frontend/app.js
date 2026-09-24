@@ -1,5 +1,7 @@
 const API = "/api";
 let CURRENT = null;
+// Only the latest renderGraph call is allowed to touch the DOM.
+let GRAPH_RENDER_TOKEN = 0;
 
 function activate(v) {
   document.querySelectorAll("nav#views button").forEach(b => b.classList.toggle("active", b.dataset.view === v));
@@ -49,7 +51,9 @@ async function open(cid) {
     document.querySelector(`button[data-view=${v}]`).disabled = false);
   document.getElementById("detail-title").textContent = `${cid} — ${CURRENT.case.verdict}`;
   renderDetail(); renderLedger(); renderTimeline(); renderActions(); renderSar();
-  renderGraph(CURRENT);
+  // Do NOT render the graph here — it fires again when the Graph tab
+  // is clicked, which used to append a second SVG. The tab-click
+  // handler in the nav loop is the single trigger.
   activate("detail");
 }
 
@@ -136,10 +140,13 @@ function renderSar() {
 
 // ---- Graph (d3 force layout, live TG-enriched) ------------------------
 async function renderGraph(state) {
+  // Bump the token; only the newest call may touch the DOM.
+  const myToken = ++GRAPH_RENDER_TOKEN;
   const container = document.getElementById("graph-container");
-  container.innerHTML = "";
   const g = await (await fetch(`${API}/cases/${state.case_id}/graph`)).json();
-  if (!g.nodes) { container.textContent = "no graph"; return; }
+  if (myToken !== GRAPH_RENDER_TOKEN) return;    // superseded — bail
+  container.innerHTML = "";                       // clear right before draw
+  if (!g.nodes || !g.nodes.length) { container.textContent = "no graph"; return; }
 
   const COLORS = {
     case:        "#f26666",   // red
@@ -162,37 +169,51 @@ async function renderGraph(state) {
     </div>`;
   container.appendChild(header);
 
-  const W = 1100, H = 620;
-  const svg = d3.select(container).append("svg").attr("width", W).attr("height", H);
+  // Real container size, height ≈ 75vh.
+  const W = container.clientWidth || 1200;
+  const H = Math.max(420, Math.floor(window.innerHeight * 0.75));
+
+  const svg = d3.select(container).append("svg")
+    .attr("width", "100%")
+    .attr("height", H)
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .attr("preserveAspectRatio", "xMidYMid meet");
+  const zoomLayer = svg.append("g").attr("class", "zoom-layer");
+  svg.call(d3.zoom()
+    .scaleExtent([0.25, 4])
+    .on("zoom", (ev) => zoomLayer.attr("transform", ev.transform)));
+
   const sim = d3.forceSimulation(g.nodes)
-    .force("link", d3.forceLink(g.edges).id(d=>d.id).distance(d => d.label === "USED" ? 70 : 110))
-    .force("charge", d3.forceManyBody().strength(-260))
-    .force("collide", d3.forceCollide().radius(18))
-    .force("center", d3.forceCenter(W/2, H/2));
-  const edge = svg.append("g").selectAll("line").data(g.edges).enter().append("line")
-    .attr("stroke","#3a4051").attr("stroke-width", 1.2)
+    .force("link",    d3.forceLink(g.edges).id(d => d.id)
+                         .distance(d => d.label === "USED" ? 130 : 180))
+    .force("charge",  d3.forceManyBody().strength(-800))
+    .force("collide", d3.forceCollide().radius(28))
+    .force("x",       d3.forceX(W / 2).strength(0.05))
+    .force("y",       d3.forceY(H / 2).strength(0.05))
+    .force("center",  d3.forceCenter(W / 2, H / 2));
+
+  const edge = zoomLayer.append("g").selectAll("line").data(g.edges).enter().append("line")
+    .attr("stroke", "#3a4051").attr("stroke-width", 1.2)
     .attr("opacity", d => d.label === "USED" ? 0.5 : 0.85);
-  const node = svg.append("g").selectAll("g").data(g.nodes).enter().append("g");
+  const node = zoomLayer.append("g").selectAll("g").data(g.nodes).enter().append("g");
   node.append("circle")
-     .attr("r", d => d.type === "case" ? 16 : (d.type === "device" ? 12 : 8))
+     .attr("r", d => d.type === "case" ? 18 : (d.type === "device" ? 14 : 9))
      .attr("fill", d => COLORS[d.type] || "#888")
      .attr("stroke", d => (d.type === "card" && d.has_fraud_cc) ? COLORS.case : "#0e1116")
      .attr("stroke-width", d => (d.type === "card" && d.has_fraud_cc) ? 3 : 1);
-  // Only label case / device / fraud-outlined cards so the graph reads
-  // cleanly when there are 30+ peers.
   node.append("text")
      .text(d => (d.type === "case" || d.type === "device" ||
                  (d.type === "card" && d.has_fraud_cc) ||
                  d.type === "closed_case") ? d.label : "")
-     .attr("dx", d => d.type === "case" ? 20 : 12).attr("dy", 4)
-     .style("font-size","11px").style("fill","#dfe4ee")
-     .style("pointer-events","none");
-  // Tooltip on hover for anonymous peer cards.
+     .attr("dx", d => d.type === "case" ? 24 : 14).attr("dy", 4)
+     .style("font-size", "12px").style("fill", "#dfe4ee")
+     .style("pointer-events", "none");
   node.append("title").text(d => d.label + (d.has_fraud_cc ? "  ⚠ confirmed-fraud CC on shared device" : ""));
+
   sim.on("tick", () => {
-    edge.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
-        .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-    node.attr("transform", d=>`translate(${d.x},${d.y})`);
+    edge.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+    node.attr("transform", d => `translate(${d.x},${d.y})`);
   });
 }
 

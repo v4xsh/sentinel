@@ -64,6 +64,11 @@ tr.clickable:hover { background: rgba(106,168,255,0.08); }
 
 pre { background: var(--panel); padding: 12px; border-radius: 6px; overflow: auto; }
 #sar-body pre { white-space: pre-wrap; word-break: break-word; max-width: 900px; line-height: 1.5; }
+.graph-header { margin: 8px 0 12px; }
+.graph-caption { color: var(--fg, #dfe4ee); font-size: 13px; margin-bottom: 8px; line-height: 1.5; }
+.graph-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--muted, #8890a0); }
+.graph-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.graph-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
 .metrics-box { display: flex; gap: 24px; margin: 16px 0 24px; flex-wrap: wrap; }
 .metric { background: var(--panel); border: 1px solid var(--panel-border,#2a2f3a);
           border-radius: 8px; padding: 16px 20px; min-width: 260px; }

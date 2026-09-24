@@ -134,26 +134,61 @@ function renderSar() {
     <pre>${s.narrative||""}</pre>`;
 }
 
-// ---- Graph (d3 force layout) -----------------------------------------
+// ---- Graph (d3 force layout, live TG-enriched) ------------------------
 async function renderGraph(state) {
   const container = document.getElementById("graph-container");
   container.innerHTML = "";
   const g = await (await fetch(`${API}/cases/${state.case_id}/graph`)).json();
   if (!g.nodes) { container.textContent = "no graph"; return; }
-  const W = 900, H = 500;
+
+  const COLORS = {
+    case:        "#f26666",   // red
+    device:      "#f2c04d",   // yellow
+    card:        "#6aa8ff",   // blue
+    closed_case: "#b58bff",   // purple
+  };
+
+  // Legend + caption above the SVG.
+  const header = document.createElement("div");
+  header.className = "graph-header";
+  header.innerHTML = `
+    <div class="graph-caption">${g.caption || ""}</div>
+    <div class="graph-legend">
+      <span><i style="background:${COLORS.case}"></i> case</span>
+      <span><i style="background:${COLORS.device}"></i> device</span>
+      <span><i style="background:${COLORS.card}"></i> peer card</span>
+      <span><i style="background:${COLORS.card};border:2px solid ${COLORS.case}"></i> peer card + confirmed-fraud CC</span>
+      <span><i style="background:${COLORS.closed_case}"></i> confirmed-fraud ClosedCase</span>
+    </div>`;
+  container.appendChild(header);
+
+  const W = 1100, H = 620;
   const svg = d3.select(container).append("svg").attr("width", W).attr("height", H);
   const sim = d3.forceSimulation(g.nodes)
-    .force("link", d3.forceLink(g.edges).id(d=>d.id).distance(90))
-    .force("charge", d3.forceManyBody().strength(-300))
+    .force("link", d3.forceLink(g.edges).id(d=>d.id).distance(d => d.label === "USED" ? 70 : 110))
+    .force("charge", d3.forceManyBody().strength(-260))
+    .force("collide", d3.forceCollide().radius(18))
     .force("center", d3.forceCenter(W/2, H/2));
   const edge = svg.append("g").selectAll("line").data(g.edges).enter().append("line")
-    .attr("stroke","#3a4051").attr("stroke-width",1.5);
+    .attr("stroke","#3a4051").attr("stroke-width", 1.2)
+    .attr("opacity", d => d.label === "USED" ? 0.5 : 0.85);
   const node = svg.append("g").selectAll("g").data(g.nodes).enter().append("g");
-  node.append("circle").attr("r", d => d.type==="case" ? 14 : 8)
-     .attr("fill", d => ({case:"#f26666", card:"#6aa8ff", device:"#f2c04d",
-                          closed_case:"#8ba7ff"})[d.type] || "#888");
-  node.append("text").text(d=>d.label).attr("dx",12).attr("dy",4)
-     .style("font-size","11px").style("fill","#dfe4ee");
+  node.append("circle")
+     .attr("r", d => d.type === "case" ? 16 : (d.type === "device" ? 12 : 8))
+     .attr("fill", d => COLORS[d.type] || "#888")
+     .attr("stroke", d => (d.type === "card" && d.has_fraud_cc) ? COLORS.case : "#0e1116")
+     .attr("stroke-width", d => (d.type === "card" && d.has_fraud_cc) ? 3 : 1);
+  // Only label case / device / fraud-outlined cards so the graph reads
+  // cleanly when there are 30+ peers.
+  node.append("text")
+     .text(d => (d.type === "case" || d.type === "device" ||
+                 (d.type === "card" && d.has_fraud_cc) ||
+                 d.type === "closed_case") ? d.label : "")
+     .attr("dx", d => d.type === "case" ? 20 : 12).attr("dy", 4)
+     .style("font-size","11px").style("fill","#dfe4ee")
+     .style("pointer-events","none");
+  // Tooltip on hover for anonymous peer cards.
+  node.append("title").text(d => d.label + (d.has_fraud_cc ? "  ⚠ confirmed-fraud CC on shared device" : ""));
   sim.on("tick", () => {
     edge.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
         .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);

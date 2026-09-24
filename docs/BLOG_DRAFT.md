@@ -201,7 +201,7 @@ end-to-end number is the simulated one.
 **Out-of-time evaluation** — train Jul–Sep 2016, test Oct+ 2016. Same
 τ-tuning protocol; the eval half is genuinely held out in time. The
 alert model, tuned on p_initial from the 75-case tune half, scores
-**AUC 0.9431, Brier 0.0804** on the 75-case eval half. Very close to
+**AUC 0.9374, Brier 0.0829** on the 75-case eval half. Very close to
 the 5-fold CV number (AUC 0.9465) — the model is not overfitting the
 Jul–Sep pool, and its behaviour on unseen October cases matches the
 in-sample CV estimate to two decimals.

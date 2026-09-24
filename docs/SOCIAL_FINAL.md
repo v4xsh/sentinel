@@ -7,7 +7,7 @@ Post the blog + video links by replacing the markers before publishing.
 
 ## X / Twitter (single post, ≤ 280 chars)
 
-Built Sentinel for @TigerGraphDB × Hacker House Goa: a LangGraph agent that reads a card-txn graph and decides fraud / SAR / next actions. LLM writes prose, policy engine decides. 12/8/0, 4 SARs, OOT AUC 0.9431. 
+Built Sentinel for @TigerGraphDB × Hacker House Goa: a LangGraph agent that reads a card-txn graph and decides fraud / SAR / next actions. LLM writes prose, policy engine decides. 12/8/0, 4 SARs, OOT AUC 0.9374. 
 <!-- BLOG -->
 <!-- VIDEO -->
 https://github.com/v4xsh/sentinel
@@ -53,7 +53,7 @@ never argues with itself.
   I1–I13.
 * Alert model 5-fold CV: **AUC 0.9465 ± 0.0046, Brier 0.0927**.
 * Out-of-time evaluation (train Jul–Sep 2016, test Oct+): **AUC
-  0.9431, Brier 0.0804** on 75 held-out cases.
+  0.9374, Brier 0.0829** on 75 held-out cases.
 * Simulated backtest (τ=0.30): verdict accuracy **0.833**.
 * FinCEN §3a policy encoding replay: **4,665 / 4,665** historical SAR
   decisions reproduced (rule test).

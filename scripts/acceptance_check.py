@@ -171,9 +171,9 @@ def check_10_oot_number_present() -> bool:
     for f in ("README.md", "docs/SUBMISSION.md", "docs/BENCHMARK_RESULTS.md",
               "docs/BLOG_DRAFT.md"):
         txt = (REPO / f).read_text()
-        if "0.9431" not in txt:
-            return _ok(f"OOT AUC 0.9431 in {f}", False, "not found")
-    return _ok("OOT AUC 0.9431 in all four docs", True, "README + SUBMISSION + BENCHMARK + BLOG")
+        if "0.9374" not in txt:
+            return _ok(f"OOT AUC 0.9374 in {f}", False, "not found")
+    return _ok("OOT AUC 0.9374 in all four docs", True, "README + SUBMISSION + BENCHMARK + BLOG")
 
 
 def main() -> int:

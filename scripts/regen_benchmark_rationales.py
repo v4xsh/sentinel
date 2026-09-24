@@ -75,7 +75,15 @@ def _rationale(a: dict) -> str:
     # Prefer graph-sourced (installed-query) evidence; fall back to any.
     graph_ev = [e for e in ev if e.get("source") == "graph"]
     picks = (graph_ev or ev)[:3]
-    top_str = "; ".join(f"[{(e.get('ref') or 'evidence').split(':')[0]}] {e.get('claim','')[:90]}"
+    import textwrap as _tw
+    def _clip(s: str, w: int = 180) -> str:
+        # Sentence-boundary preferred; textwrap.shorten as fallback so we
+        # never cut mid-word.
+        head = s.split(".")[0].strip()
+        if head and len(head) <= w:
+            return head + ("." if not head.endswith(".") else "")
+        return _tw.shorten(s.strip(), width=w, placeholder="…")
+    top_str = "; ".join(f"[{(e.get('ref') or 'evidence').split(':')[0]}] {_clip(e.get('claim',''))}"
                         for e in picks) if picks else "no ledger entries"
     verdict = c["verdict"]
     p_f = c["fraud_probability"]
@@ -149,9 +157,11 @@ def main() -> int:
                  "tool-call log). Alert-model coefficients from "
                  "`sentinel/evidence/alert_model.json` (L2 logistic, 5-fold CV "
                  "**AUC 0.9465, Brier 0.0927**). **Out-of-time evaluation** — "
-                 "train on Jul–Sep 2016, test on Oct+ 2016 (n=75 held-out eval, "
-                 "`--oot` protocol) — reproduces the CV estimate almost "
-                 "exactly: **AUC 0.9431, Brier 0.0804**. Each SentinelCase was "
+                 "model refit on Jul–Sep cases only, evaluated on all Oct+ "
+                 "closed cases it never saw (n=1,372: 1,228 fraud + 144 "
+                 "cleared) — reproduces the CV estimate: **AUC 0.9374, "
+                 "Brier 0.0829** (`python scripts/oot_eval.py`, report at "
+                 "`backtest/oot/OOT_REPORT.md`). Each SentinelCase was "
                  "written back to the graph via the `write_case` installed "
                  "query.\n")
     lines.append("**Oracle-mode caveat.** The 150-case oracle backtest hits "

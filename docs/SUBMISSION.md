@@ -34,7 +34,7 @@ deterministic policy engine decides actions.
 | Alert model 5-fold CV | **AUC 0.9465 ± 0.0046,  Brier 0.0927** |
 | Simulated backtest (n=150, τ=0.30) | **verdict acc 0.833** |
 | Oracle backtest (n=150) | **verdict acc 1.000** — by construction; `customer_response` is derived from the historical `actions_taken` label. Use the simulated number and the OOT AUC as the honest end-to-end evaluations. |
-| OOT AUC (train Jul–Sep 2016, test Oct+; n=75 held-out eval) | **AUC 0.9431, Brier 0.0804** |
+| OOT AUC — model refit on Jul–Sep cases only, evaluated on all Oct+ closed cases it never saw (n=1,372) | **AUC 0.9374, Brier 0.0829** |
 | §3a policy encoding: SAR-decision replay | **4,665 / 4,665** confirmed-fraud rows |
 | SentinelCase vertices in graph | **35** (20 benchmark + 15 monitoring) |
 | Installed GSQL queries | **18** |
@@ -44,8 +44,13 @@ deterministic policy engine decides actions.
 ## Three things to look at first
 
 1. **`cases/HHG-014.json`** — the undocumented-ring flagship. Analyst
-   flagged, T4 device signal fires shared_element=device, §3a filed a
-   SAR, R6 monitors the 25 connected cards from the ring. Pattern
+   flagged, `shared_element = "device"` fires because the seed shares
+   a narrow device with a card carrying a prior confirmed-fraud
+   ClosedCase (§3a "another card's fraud" leg). SAR filed, R6 fires
+   `MONITOR_CONNECTED_CARDS` on the shared-device blast radius. Under
+   the strict peer definition `connected_card_ids` is empty here (no
+   ≥2 in-window peers with a New/proxied signal), but `shared_element`
+   is set on the ring-has-confirmed-fraud-CC leg. Pattern
    `undocumented` requires a prose `pattern_description`; ours cites
    only whitelisted case-IDs (I12).
 

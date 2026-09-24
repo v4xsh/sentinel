@@ -1,4 +1,4 @@
-# CHECKPOINT 6 (v3) — combined report
+# Backtest report
 
 **Alert model** (L2 logistic, class-balanced): 5-fold CV **AUC = 0.9465 ± 0.0046**, **Brier = 0.0927**  (5565 closed cases: 4665 confirmed_fraud + 900 cleared).
 

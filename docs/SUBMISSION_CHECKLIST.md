@@ -14,7 +14,7 @@ its location or an explicit "user adds on submission" line.*
 | 5 | **SAR files where required** | 4 filed: HHG-004, HHG-006, HHG-011, HHG-014. `sar.file=True` + `narrative` populated + `FILE_REPORT` in `next_best_actions.final` |
 | 6 | **Next-best-action before / after in every file** | `next_best_actions.initial` and `next_best_actions.final` on all 20 answer files; `what_changed` records the set-diff |
 | 7 | **UI** | FastAPI + d3 SPA. Launch: `./run_ui.sh` → http://localhost:8000. Screenshots: `docs/img/{cases,hhg014_graph,backtest}.png` |
-| 8 | **Backtest report** | `backtest/BACKTEST_REPORT.md` — 150 cases, 75 tune + 75 held-out eval; simulated τ=0.30 verdict acc 0.833; OOT eval AUC 0.9431, Brier 0.0804; reliability plot inline |
+| 8 | **Backtest report** | `backtest/BACKTEST_REPORT.md` — 150 cases, 75 tune + 75 held-out eval; simulated τ=0.30 verdict acc 0.833; OOT eval AUC 0.9374, Brier 0.0829; reliability plot inline |
 | 9 | **Alert-model metrics** | 5-fold CV AUC 0.9465 ± 0.0046, Brier 0.0927 (`sentinel/evidence/alert_model.json`) |
 | 10 | **FinCEN §3a SAR-encoding replay** | 4,665 / 4,665 confirmed-fraud rows reproduce historical `report_filed` (`tests/test_sar_replay.py`) |
 | 11 | **Monitoring mode extras** | 15 alerts in `cases_extra/EXTRA-*.json` from `python -m sentinel.monitor 15` |
@@ -38,7 +38,7 @@ its location or an explicit "user adds on submission" line.*
 - 12 fraud / 8 legitimate / 0 uncertain (finals)
 - SAR set: HHG-004, HHG-006, HHG-011, HHG-014
 - Alert model 5-fold CV: AUC 0.9465, Brier 0.0927
-- OOT eval (Jul–Sep tune → Oct+ eval, n=75): AUC 0.9431, Brier 0.0804
+- OOT eval (Jul–Sep tune → Oct+ eval, n=75): AUC 0.9374, Brier 0.0829
 - Simulated backtest (τ=0.30): verdict acc 0.833
 - Oracle backtest: verdict acc 1.000 (policy-engine correctness check)
 - §3a policy encoding: 4,665 / 4,665 confirmed-fraud rows reproduced

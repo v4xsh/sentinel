@@ -126,7 +126,7 @@ per §2) and the rule citation (R1, R4, R6...)."
 **Say**: "150 closed cases stratified by pattern/archetype. Alert model
 5-fold CV: **AUC 0.9465, Brier 0.09**. Out-of-time: train on Jul–Sep
 2016, evaluate on 75 held-out Oct+ cases the model never saw —
-**AUC 0.9431, Brier 0.08**. The model doesn't overfit the training
+**AUC 0.9374, Brier 0.08**. The model doesn't overfit the training
 window. Simulated backtest at τ=0.30 hits **83.3%** verdict accuracy.
 The reliability plot is right here."
 

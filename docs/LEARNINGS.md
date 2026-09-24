@@ -167,3 +167,31 @@ has **zero exceptions** across 4,665 fraud cases; three action combos exactly;
 716 / 158 / 26 cleared archetypes; U1 (SM-G935F + anonymous proxy) hits
 CC-2649 / CC-2971 / CC-2985 / CC-3035; U2 (four ~$500 within 40 min) hits
 CC-3748 / CC-3841 / CC-3907 / CC-4086 / CC-4124.
+
+## Phase 4
+
+### `ring_wcc` at cap 100 finds the giant component, not a ring
+`graph/queries/q18_ring_wcc.gsql` is a real BFS-fixpoint weakly-connected
+component algorithm over the card–device projection (edges =
+`KNOWN_DEVICE`). I built it hoping it would isolate the shared-device
+rings that `ring_components` misses when the ring peer is one hop away
+through a different KNOWN_DEVICE edge.
+
+The smoke test told a different story. Seeded on `C00259-K1` with the
+default degree cap of 100, the WCC returns **5,487 cards across 9,199
+narrow devices** in 5 BFS iterations. At cap 25 it still returns
+**3,831 cards**. At cap 5 it returns **1,903**. At cap 3 (very
+restrictive) it still returns **1,235 cards**.
+
+That's the giant component. In a card population of ~15,000 the
+projection percolates: at any reasonable degree cap, one seed reaches
+a third to half of all cards through chains of shared narrow devices.
+WCC alone can't isolate a ring. A ring signal has to come from
+`ring_components`' narrower filter — narrow device *plus* New/proxied
+activity in-window *or* an attached confirmed-fraud ClosedCase on the
+shared device. That's why `shared_element` is set by
+`compute_shared_element()` on the peer filter, not on raw WCC size.
+
+`ring_wcc` still lands in the ledger as an evidence entry (it names
+the component size + exposure) — useful blast-radius context an
+analyst can read, not a decision signal.

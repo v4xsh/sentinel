@@ -30,9 +30,11 @@ The graph carries the story the flat CSV can't. Every "similar to" and "shares X
 
 * TigerVector's HNSW cosine index over `ClosedCase.notes_embedding`. All 5,565 case notes embedded with `BAAI/bge-small-en-v1.5` (384-dim, CPU, local, deterministic). Retrieval at query time takes about 1.4 s through a REST-wrapped installed query, `vector_search_cc`.
 * `vectorSearch()` as a top-k function inside a GSQL query, so the retrieval path is TG-native end-to-end.
-* A hand-written weakly-connected-component algorithm at `graph/queries/q18_ring_wcc.gsql`. BFS-fixpoint over the card–device projection, with a device-degree cap of 100 to prune hub devices (public wifi, disposable browsers) that would otherwise merge the whole population into one component. It's not a fixed pattern query; it's an actual graph algorithm expressed in GSQL that returns the seed's connected component along with its in-window transaction exposure.
+* A hand-written weakly-connected-component algorithm at `graph/queries/q18_ring_wcc.gsql`. BFS-fixpoint over the card–device projection, with a device-degree cap that skips hub devices (public wifi, disposable browsers). It's not a fixed pattern query; it's an actual graph algorithm expressed in GSQL that returns the seed's connected component along with its in-window transaction exposure.
 
 Eighteen installed GSQL queries in all. The eight that fire per investigation dispatch through `asyncio.gather` on `httpx.AsyncClient`; wall-clock is about two seconds instead of the twenty-five it took sequentially.
+
+**What `ring_wcc` told me that I did not expect.** I built it hoping it would isolate the shared-device rings that `ring_components` misses when the peer is one hop away through a different device. The smoke test told a different story. Seeded on any HHG card at the default degree cap of 100, WCC returns about 5,500 cards across 9,200 narrow devices in five BFS iterations. At cap 25 it still returns 3,800 cards. At cap 5, 1,900. At cap 3, still 1,235. The card–device projection percolates: at any reasonable degree cap, one seed reaches a third to half of all cards through chains of shared narrow devices. WCC alone can't isolate a ring. A ring signal has to come from `ring_components`' narrower filter (narrow device *plus* New/proxied activity in-window *or* an attached confirmed-fraud ClosedCase on the shared device). That's why `shared_element` is set by the peer filter, not by raw WCC size. `ring_wcc` still lands in the ledger as blast-radius context an analyst can read, but it's not a decision signal.
 
 ## MCP is the tool path
 
@@ -71,7 +73,7 @@ HHG-003 is the case I like most to explain. Customer reports "I never made this 
 
 ## What I measured
 
-The alert model's 5-fold CV comes out to AUC 0.9465 ± 0.0046, Brier 0.0927. But CV is in-sample. The strict number is out-of-time: I train τ on Jul–Sep 2016 cases and evaluate the alert model's p_initial on 75 held-out Oct+ 2016 cases the model has never seen. Eval AUC is **0.9431**, Brier 0.0804. The model isn't over-fitting to the earlier window; its behaviour on strictly-later cases matches the CV estimate almost to two decimals.
+The alert model's 5-fold CV comes out to AUC 0.9465 ± 0.0046, Brier 0.0927. But CV is in-sample. The strict number is out-of-time: I refit the model on closed cases with `closed_at < 2016-10-01` only, then score every closed case opened on October 1 or later. That's **n = 1,372 cases the model has never seen** (1,228 fraud + 144 cleared). Eval **AUC 0.9374, Brier 0.0829**. Almost identical to the CV estimate. The model isn't overfitting the training window; its behaviour on strictly-later cases matches the in-sample number to within a percentage point. Reproduce with `python scripts/oot_eval.py`.
 
 ![Backtest report](docs/img/backtest.png)
 

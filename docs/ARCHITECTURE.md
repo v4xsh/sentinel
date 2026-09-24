@@ -138,6 +138,6 @@ what the actions would have been if the customer had said something else.
 - 89 offline unit tests (policy, features, calibration, R10, invariants
   I1–I11 including the dedicated I10/I11 suite, BLOCK_CARD-on-fraud,
   ring components, SAR replay, channels/simulator).
-- 16 query-contract tests hitting every installed GSQL query with the
-  exact param dicts the agent uses.
+- 16 query-contract tests hitting every one of the 18 installed GSQL
+  queries with the exact param dicts the agent uses.
 - Total suite: **129 tests** (`python -m pytest tests/`).

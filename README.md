@@ -1,5 +1,7 @@
 # Sentinel — Agentic Fraud Investigation on TigerGraph
 
+**Demo video:** _link added on submission_
+
 Hackathon submission for **Hacker House Goa 2026 × TigerGraph**.
 
 Sentinel is a LangGraph agent that reads a card-transaction graph and, for
@@ -10,6 +12,14 @@ has a graph query or a fitted-model coefficient behind it; every action
 comes from a deterministic policy engine encoding the bank's rulebook.
 The LLM writes prose. The policy engine decides. Two jobs; only one can
 hallucinate, and we contained it.
+
+## Screenshots
+
+| Cases list | HHG-014 graph neighbourhood | Backtest report |
+|---|---|---|
+| ![Cases](docs/img/cases.png) | ![HHG-014 graph](docs/img/hhg014_graph.png) | ![Backtest](docs/img/backtest.png) |
+
+*(Captured from `./run_ui.sh` at 1600×900 via `scripts/capture_screenshots.py`.)*
 
 ## Results at a glance
 

@@ -177,7 +177,35 @@ async function loadBacktest() {
     <th>pred verdict</th><th>pred pattern</th><th>p_initial</th></tr></thead>
     <tbody>${s[mode].preview.map(rowH).join("")}</tbody></table>` : "";
   const rel = s.reliability_url ? `<h3>Reliability</h3><img src="${s.reliability_url}" alt="reliability">` : "";
-  el.innerHTML = `${rel}${preview("oracle")}${preview("simulated")}
+  // Top metrics box: OOT (from oot_eval.json) + 5-fold CV (from alert_model.json).
+  const m = s.metrics || {};
+  let metricsBox = "";
+  if (m.oot || m.cv) {
+    const cells = [];
+    if (m.oot && m.oot.auc != null) {
+      cells.push(`<div class="metric">
+        <div class="metric-value">${m.oot.auc.toFixed(4)}</div>
+        <div class="metric-label">Out-of-time AUC</div>
+        <div class="metric-sub">model trained Jul–Sep, tested on
+          ${m.oot.n.toLocaleString()} later cases
+          (${m.oot.n_fraud.toLocaleString()} fraud +
+           ${m.oot.n_cleared.toLocaleString()} cleared)
+          · Brier ${m.oot.brier != null ? m.oot.brier.toFixed(4) : "?"}
+        </div>
+      </div>`);
+    }
+    if (m.cv && m.cv.auc != null) {
+      cells.push(`<div class="metric">
+        <div class="metric-value">${m.cv.auc.toFixed(4)}</div>
+        <div class="metric-label">5-fold CV AUC</div>
+        <div class="metric-sub">n=${(m.cv.n_train||0).toLocaleString()}
+          · Brier ${m.cv.brier != null ? m.cv.brier.toFixed(4) : "?"}
+        </div>
+      </div>`);
+    }
+    metricsBox = `<div class="metrics-box">${cells.join("")}</div>`;
+  }
+  el.innerHTML = `${metricsBox}${rel}${preview("oracle")}${preview("simulated")}
     <details><summary>Full BACKTEST_REPORT.md</summary>
     <div>${marked.parse(s.report || "")}</div></details>`;
 }

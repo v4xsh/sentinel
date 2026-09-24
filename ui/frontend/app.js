@@ -268,18 +268,62 @@ async function loadBacktest() {
 
 async function loadMemory() {
   const el = document.getElementById("memory-body");
+  el.textContent = "Loading…";
   const m = await (await fetch(`${API}/memory`)).json();
   if (!m.ok) { el.innerHTML = `<p>Graph unreachable: ${m.error}</p>`; return; }
-  // Fetch extras count so we can render the "20 + N monitoring" split.
-  let extras_n = 0;
-  try {
-    const s = await (await fetch(`${API}/extras`)).json();
-    extras_n = (s && s.n) ? s.n : 0;
-  } catch (_) {}
-  const bench = 20;
+
+  const bench = m.benchmark  || [];
+  const mon   = m.monitoring || [];
   const total = m.sentinel_case_count;
-  el.innerHTML = `<p>SentinelCase vertices: <b>${total}</b>
-    (${bench} benchmark + ${extras_n} monitoring)</p>`;
+
+  const badge = v =>
+    `<span class="badge ${v || 'uncertain'}">${v || "—"}</span>`;
+  const money = x =>
+    (x && x > 0) ? "$" + x.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : "—";
+
+  const row = r => `<tr>
+      <td><b>${r.case_id}</b></td>
+      <td>${badge(r.verdict)}</td>
+      <td class="muted">${r.pattern || "—"}</td>
+      <td>${money(r.exposure_usd)}</td>
+      <td class="muted">${r.opened_at || "—"}</td>
+    </tr>`;
+
+  const table = (title, rows) => rows.length ? `
+    <h3>${title} (${rows.length})</h3>
+    <table class="memory-table"><thead><tr>
+      <th>case_id</th><th>verdict</th><th>pattern</th>
+      <th>exposure</th><th>opened_at</th>
+    </tr></thead><tbody>${rows.map(row).join("")}</tbody></table>` : "";
+
+  let retrievalBlock = "";
+  const hit = m.hhg_014_retrieved || [];
+  if (hit.length) {
+    retrievalBlock = `
+      <div class="retrieval-callout">
+        <b>Memory retrieval for HHG-014 returned ${hit.length} SentinelCase${hit.length > 1 ? "s" : ""}:</b>
+        ${hit.map(h => `<code>${h}</code>`).join(", ")}
+      </div>`;
+  } else {
+    retrievalBlock = `
+      <div class="retrieval-callout muted">
+        Memory retrieval for HHG-014 returned no SentinelCase hits above
+        the citation-guard threshold in this run (the I12 whitelist keeps
+        the LLM prose honest — only structural or high-score semantic
+        hits appear in <code>similar_prior_cases</code>).
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <p class="memory-lede">
+      Every investigation is written back to TigerGraph. Later
+      investigations retrieve these as similar past cases.
+    </p>
+    <p>SentinelCase vertices in the graph: <b>${total}</b>
+       (${bench.length} benchmark + ${mon.length} monitoring).</p>
+    ${retrievalBlock}
+    ${table("Benchmark", bench)}
+    ${table("Monitoring", mon)}`;
 }
 
 async function loadMonitor() {

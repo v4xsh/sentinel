@@ -459,14 +459,74 @@ def findings() -> dict:
 
 @app.get("/api/memory")
 def memory() -> dict:
-    """SentinelCase count from the graph."""
+    """Live SentinelCase vertices (id, verdict, pattern, exposure, opened_at).
+
+    Returns the count plus the per-vertex list grouped by whether the case
+    came from the 20-case benchmark run (``CASE-HHG-*``) or the 15-case
+    monitoring sweep (``CASE-EXTRA-*``). The ``hhg_014_retrieved`` field
+    lists whatever the persisted memory retrieval for HHG-014 turned up
+    (from cases/HHG-014.json::similar_prior_cases) so the UI can show the
+    demo's "loop closes" moment.
+    """
+    from sentinel.graph.client import TGClient
     try:
-        from sentinel.graph.client import TGClient
-        tg = TGClient()
-        n = tg.get_graph_vertex_count("FraudGraph", "SentinelCase")
-        return {"sentinel_case_count": n, "ok": True}
+        cli = TGClient()
+        try:
+            r = cli.restpp_get("graph/FraudGraph/vertices/SentinelCase",
+                                params={"limit": 200})
+            rows = r.get("results", []) if isinstance(r, dict) else r
+        finally:
+            cli.close()
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "error": str(e)[:200]}
+
+    def _row(v):
+        a = v.get("attributes", {}) or {}
+        return {
+            "case_id":           v.get("v_id"),
+            "hhg_id":            a.get("hhg_id") or "",
+            "verdict":           a.get("verdict") or "",
+            "pattern":           a.get("pattern") or "",
+            "fraud_probability": float(a.get("fraud_probability") or 0.0),
+            "exposure_usd":      float(a.get("exposure_usd") or 0.0),
+            "opened_at":         str(a.get("opened_at") or ""),
+        }
+
+    benchmark: list[dict] = []
+    monitoring: list[dict] = []
+    strays: list[dict] = []
+    for v in rows:
+        cid = v.get("v_id") or ""
+        row = _row(v)
+        if cid.startswith("CASE-HHG-"):
+            benchmark.append(row)
+        elif cid.startswith("CASE-EXTRA-"):
+            monitoring.append(row)
+        else:
+            strays.append(row)
+    benchmark.sort(key=lambda r: r["case_id"])
+    monitoring.sort(key=lambda r: r["case_id"])
+
+    # HHG-014 retrieval: read what the persisted answer's memory pipeline
+    # kept. The citation guard means this is the whitelist the LLM was
+    # allowed to cite in the analyst summary.
+    hhg_014_retrieved: list[str] = []
+    try:
+        p = REPO_ROOT / "cases" / "HHG-014.json"
+        if p.exists():
+            _d = json.loads(p.read_text())
+            hhg_014_retrieved = list(_d.get("case", {}).get("similar_prior_cases") or [])
+    except Exception:  # noqa: BLE001
+        pass
+
+    return {
+        "ok":                    True,
+        "sentinel_case_count":   len(benchmark) + len(monitoring) + len(strays),
+        "benchmark":             benchmark,
+        "monitoring":            monitoring,
+        "strays":                strays,
+        "hhg_014_retrieved":     hhg_014_retrieved,
+    }
 
 
 @app.post("/api/whatif/{case_id}")

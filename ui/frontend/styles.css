@@ -64,6 +64,14 @@ tr.clickable:hover { background: rgba(106,168,255,0.08); }
 
 pre { background: var(--panel); padding: 12px; border-radius: 6px; overflow: auto; }
 #sar-body pre { white-space: pre-wrap; word-break: break-word; max-width: 900px; line-height: 1.5; }
+.memory-lede { color: var(--fg,#dfe4ee); font-size: 14px; margin: 0 0 12px; line-height: 1.5; }
+.memory-table th, .memory-table td { padding: 6px 10px; font-size: 12px; }
+.memory-table { margin: 8px 0 24px; }
+.retrieval-callout { background: var(--panel); border-left: 3px solid var(--fraud,#eb6a6a);
+                     padding: 10px 14px; margin: 12px 0 16px; border-radius: 4px;
+                     font-size: 13px; line-height: 1.5; }
+.retrieval-callout code { background: rgba(255,255,255,0.06); padding: 1px 6px;
+                          border-radius: 3px; font-size: 12px; margin: 0 2px; }
 .graph-header { margin: 8px 0 12px; }
 .graph-caption { color: var(--fg, #dfe4ee); font-size: 13px; margin-bottom: 8px; line-height: 1.5; }
 .graph-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--muted, #8890a0); }

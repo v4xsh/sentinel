@@ -65,7 +65,7 @@ flowchart LR
   Agent -- 8 parallel GSQL queries --> TG[(TigerGraph<br/>FraudGraph)]
   Agent -- vector_search_cc --> TG
   Agent -- write_case --> TG
-  Agent -- generate --> LLM[Gemini 3.5 Flash-Lite<br/>3-key rotation → Groq]
+  Agent -- generate --> LLM[Gemini 3.x Flash<br/>3-key rotation → Groq]
   Agent --> Answer[cases/HHG-*.json]
   Answer --> UI[Sentinel Console<br/>FastAPI + d3]
   TG --> UI
@@ -82,11 +82,11 @@ vanilla-JS + d3 for the UI, pytest.
 
 ## How TigerGraph is used
 
-**Schema.** 7 vertex types (`Customer`, `PaymentCard`, `Transaction`,
-`DeviceProfile`, `BillingRegion`, `EmailDomain`, `ClosedCase`,
-`SentinelCase`, `PolicyChunk`, `RegDocChunk`) plus directed edges. Every
-`ClosedCase` carries a 384-dim `notes_embedding` used by the TigerVector
-HNSW cosine index.
+**Schema.** 11 vertex types (`Customer`, `PaymentCard`, `Transaction`,
+`DeviceProfile`, `BillingRegion`, `EmailDomain`, `ProductCode`,
+`ClosedCase`, `SentinelCase`, `PolicyChunk`, `RegDocChunk`) plus
+directed edges. Every `ClosedCase` carries a 384-dim `notes_embedding`
+used by the TigerVector HNSW cosine index.
 
 **18 installed GSQL queries** at `graph/queries/q01..q18_*.gsql`:
 
@@ -288,8 +288,9 @@ python -m sentinel backtest --n 150 --tune-frac 0.5 --mode simulated --oot
 Ten views: case list, case detail, evidence, timeline, initial-vs-final
 actions with route badges + what-if toggle, SAR narrative, d3
 force-layout graph neighbourhood, backtest report with reliability plot,
-memory (SentinelCase count from TG), monitor (Nov–Dec sweep), findings
-(undocumented U1/U2).
+memory (live SentinelCase table from TG grouped 20 benchmark + 15
+monitoring with verdict / pattern / exposure per vertex), monitor
+(Nov–Dec sweep), findings (undocumented U1/U2).
 
 **What-if endpoint**: `POST /api/whatif/{case_id}` re-runs the policy
 engine with a swapped customer response. Deterministic, sub-10 ms, no

@@ -1,6 +1,6 @@
 # Sentinel — Agentic Fraud Investigation on TigerGraph
 
-**Demo video:** _link added on submission_
+**Demo video:** https://www.youtube.com/watch?v=JTeIDz8PVe8
 
 Hackathon submission for **Hacker House Goa 2026 × TigerGraph**.
 
@@ -328,7 +328,7 @@ cases/              20 answer JSONs (I1–I13)
 cases_extra/        15 monitoring answer JSONs
 backtest/           BACKTEST_REPORT.md + predictions + reliability plots
 docs/               ARCHITECTURE, BENCHMARK_RESULTS, DEMO_SCRIPT,
-                    DECISIONS, LEARNINGS, BLOG_DRAFT, SOCIAL_POST,
+                    DECISIONS, LEARNINGS, BLOG_DEVTO,
                     MCP_TRANSCRIPT_HHG-014, UNDOCUMENTED_FINDINGS,
                     SUBMISSION
 tests/              129 tests (I1–I13, query contracts, SAR replay, ask-first)

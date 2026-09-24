@@ -21,7 +21,7 @@ deterministic policy engine decides actions.
 | `cases_extra/` | 15 monitoring-mode answer JSONs from the Nov–Dec sweep |
 | `backtest/BACKTEST_REPORT.md` | 150-case simulated backtest (75 tune / 75 held-out eval), τ curve, reliability |
 | `ui/` | FastAPI + d3 SPA — 10 views incl. what-if, memory, monitor, findings |
-| `docs/` | this file + ARCHITECTURE + BENCHMARK_RESULTS + DECISIONS + LEARNINGS + BLOG_DRAFT + SOCIAL_POST + MCP_TRANSCRIPT + UNDOCUMENTED_FINDINGS + DEMO_SCRIPT |
+| `docs/` | this file + ARCHITECTURE + BENCHMARK_RESULTS + DECISIONS + LEARNINGS + BLOG_DEVTO + MCP_TRANSCRIPT + UNDOCUMENTED_FINDINGS + DEMO_SCRIPT |
 | `tests/` | 129 tests (I1–I13, 16 query contracts, SAR encoding replay, initial-reason sweep, ask-first) |
 
 ## Headline numbers
@@ -83,6 +83,7 @@ python -m sentinel backtest --n 150 --tune-frac 0.5 --mode simulated --oot
 
 - Code, tests, cases, monitoring runs, backtest, docs — all in the repo
   at this URL.
-- Demo video and blog publication follow on submission day.
+- **Demo video**: https://www.youtube.com/watch?v=JTeIDz8PVe8
+- Blog publication follows on submission day (text at `docs/BLOG_DEVTO.md`).
 - Repo layout, architecture, and per-case rationale for judges:
   `docs/ARCHITECTURE.md`, `docs/BENCHMARK_RESULTS.md`.

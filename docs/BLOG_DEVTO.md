@@ -5,7 +5,9 @@ tags: ai, graphdatabase, python, machinelearning
 cover_image: https://raw.githubusercontent.com/v4xsh/sentinel/main/docs/img/hhg014_graph.png
 ---
 
-Repo: [github.com/v4xsh/sentinel](https://github.com/v4xsh/sentinel)
+Repo: [github.com/v4xsh/sentinel](https://github.com/v4xsh/sentinel) · Demo video: https://www.youtube.com/watch?v=JTeIDz8PVe8
+
+{% embed https://www.youtube.com/watch?v=JTeIDz8PVe8 %}
 
 Every month, a bank's card-fraud team opens twenty investigations that a human still has to run to the ground. Was this transaction fraud. What kind. How far did it spread. Do we file a SAR. My submission to Hacker House Goa × TigerGraph is Sentinel, an agent that reads six months of the Vesta card-transaction graph and produces, for each flagged alert, a verdict, a fraud-pattern label, the actions the bank should take with §2 approval routes, and a FinCEN-shaped SAR narrative when policy calls for one. Everything the LLM writes is grounded in a graph query or a fitted-model coefficient. Every action comes from a deterministic policy engine encoding the bank's own rulebook. The LLM writes prose; the policy engine decides. Two jobs, and only one of them can hallucinate.
 

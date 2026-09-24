@@ -19,8 +19,6 @@ hallucinate, and we contained it.
 |---|---|---|
 | ![Cases](docs/img/cases.png) | ![HHG-014 graph](docs/img/hhg014_graph.png) | ![Backtest](docs/img/backtest.png) |
 
-*(Captured from `./run_ui.sh` at 1600×900 via `scripts/capture_screenshots.py`.)*
-
 ## Results at a glance
 
 | Metric | Value |

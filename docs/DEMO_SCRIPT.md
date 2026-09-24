@@ -1,8 +1,17 @@
 # Sentinel — 3-5 Minute Demo Script
 
-**Setup (once, before the demo)**
+**Pre-flight (~2 min before recording)**
 ```bash
-./run_ui.sh   # → http://localhost:8000
+# 1. Wake Savanna (workspace hibernates after inactivity — first hit warms it)
+curl -s https://tg-9452ce59-4619-4f1d-9b54-81e9a43e847a.tg-2635877100.i.tgcloud.io/api/ping
+# 2. Start the UI
+./run_ui.sh                       # → http://localhost:8000
+# 3. Warm the live ask-first case in the background
+python -m sentinel.agent.run_case HHG-001 &
+# 4. LLM probe (should print "gemini/keyN OK")
+python -c "from sentinel.llm import generate; print(generate('reply OK', max_output_tokens=8))"
+# 5. Close all other browser tabs; give focus to the demo tab
+# 6. Browser zoom 110% so screen recording reads clearly
 ```
 
 Have `backtest/BACKTEST_REPORT.md` open in a second tab.
@@ -28,31 +37,33 @@ approval routes."
 **Say**: "Analyst flagged this — 'several cards this month share an
 unusual device profile'. Sentinel closed it as **fraud, pattern =
 undocumented, p_final = 0.86, exposure $187.33, SAR filed**. The
-device-tier T4 signal (≥ 2 distinct customers with prior confirmed-fraud
-ClosedCases on this device) fired shared_element=device, so §3a
+device-tier T4 signal (a narrow shared device with a prior
+confirmed-fraud ClosedCase on it) fired shared_element=device, so §3a
 triggers a SAR and R6 fires MONITOR_CONNECTED_CARDS."
 
 **Click** the **Evidence** tab.
 
-**Say**: "The ledger carries the graph-sourced items — ring_components
-with 25 connected cards, device_neighbors, proxy_flag, and the alert
-model's channel/device signals. The posterior sat above the §6
-two-channel threshold before we even asked the customer."
+**Say**: "The ledger carries the graph-sourced items — ring_components,
+ring_wcc (the BFS-fixpoint over the card-device projection),
+device_neighbors, proxy_flag, and the alert model's channel and device
+signals. The posterior sat above the §6 two-channel threshold before
+we even asked the customer."
 
 **Click** the **SAR** tab. Show the FinCEN narrative and §3a reason.
 
 **Click** the **Graph** tab.
 
 **Say**: "d3 force layout of the neighbourhood. The case in the middle,
-the shared device it lives on, the other cards that touched that device,
-and similar prior ClosedCases pulled from the HNSW vector index."
+the shared device it lives on, and (when the ring is broader) the peer
+cards that touched that device."
 
 **Click** **Actions** tab.
 
-**Say**: "Initial actions were STEP_UP_AUTH, CREATE_CASE, FILE_REPORT
-— pre-response, gated by §6 (posterior ≥ 0.85 on ≥ 2 independent
-channels). Customer denied on the simulator's τ-rule, so final adds
-BLOCK_CARD and MONITOR_CONNECTED_CARDS. FILE_REPORT stays."
+**Say**: "Initial actions were STEP_UP_AUTH, CREATE_CASE, FILE_REPORT,
+ESCALATE_TO_ANALYST, MONITOR_CONNECTED_CARDS — all pre-response, gated
+by §6 (posterior ≥ 0.85 on ≥ 2 independent channels). Customer denied
+on the simulator's τ-rule, so the final adds BLOCK_CARD. FILE_REPORT
+and MONITOR_CONNECTED_CARDS stay."
 
 ---
 
@@ -99,11 +110,11 @@ exposure < $2,500) + `CREATE_CASE` per R2.
 
 **Say**: "Risk-score alert, out_of_region_use, p_final = 0.96, exposure
 $77.07. Initial actions were VERIFY_WITH_CUSTOMER + CREATE_CASE —
-pre-response, since §6's two-channel-≥0.85 gate hadn't triggered on
-the alerted txn alone. Simulator's τ-rule denied on the assumed
-response, so final adds BLOCK_CARD routed L1 (exposure below $2,500).
-Every final action carries its route (auto / L1 / L2 per §2) and the
-rule citation (R1, R4, R6...)."
+pre-response, since §6's two-channel-≥0.85 gate didn't fire on the
+alerted txn alone. Simulator's τ-rule denied on the assumed response,
+so final is BLOCK_CARD + CREATE_CASE, BLOCK_CARD routed L1 (exposure
+below $2,500). Every final action carries its route (auto / L1 / L2
+per §2) and the rule citation (R1, R4, R6...)."
 
 ---
 
@@ -112,16 +123,19 @@ rule citation (R1, R4, R6...)."
 **Click** **Backtest** in the top nav.
 
 **Say**: "150 closed cases stratified by pattern/archetype. Alert model
-5-fold CV: AUC **0.9465**, Brier **0.09**. Oracle mode (using each case's
-actions_taken to derive the customer response): **100% verdict accuracy**.
-Simulated mode with τ=0.3: **83.3%**. The reliability plot is right here."
+5-fold CV: **AUC 0.9465, Brier 0.09**. Out-of-time: train on Jul–Sep
+2016, evaluate on 75 held-out Oct+ cases the model never saw —
+**AUC 0.9431, Brier 0.08**. The model doesn't overfit the training
+window. Simulated backtest at τ=0.30 hits **83.3%** verdict accuracy.
+The reliability plot is right here."
 
 **Scroll** into the report — show the pattern confusion matrix and the
 top-10 misclassifications with ledgers.
 
-**Say the caveats out loud**: "Training/test overlap because we trained
-on the same 5,565 closed cases we sample from. Cleared class is 80%
-travel-related; new-phone and big-purchase are under-represented."
+**Say the caveats out loud**: "Oracle mode hits 100% by construction —
+customer_response is derived from the historical actions_taken label,
+so oracle accuracy is a policy-engine correctness check, not a model
+claim."
 
 ---
 
@@ -132,7 +146,8 @@ travel-related; new-phone and big-purchase are under-represented."
 **Say**: "Every SentinelCase we write goes into the graph as a vertex
 with edges to card, customer, transactions, devices, regions, and the
 similar ClosedCases it retrieved. That's the memory the *next*
-investigation reads — 35 SentinelCase vertices (20 benchmark + 15 monitoring) right now."
+investigation reads — 35 SentinelCase vertices (20 benchmark + 15
+monitoring) right now."
 
 **Say (optional)**: "Re-run HHG-014 and it now finds `CASE-HHG-014` in
 the retrieval — proof of the write-back closing the loop."
@@ -144,9 +159,9 @@ the retrieval — proof of the write-back closing the loop."
 **Say**: "Everything that touches the graph is a real installed GSQL
 query or a TigerVector search — Sentinel does not embed the raw txn
 table. Everything the LLM says has evidence behind it. All 20 answer
-files pass I1-I11 invariants including SAR ⇔ FILE_REPORT, probability
-agrees with the settled verdict, and every action carries its policy
-citation. Our FinCEN §3a rule encoding reproduces the historical SAR
-decision on 4,665 / 4,665 confirmed-fraud cases."
+files pass I1–I13 invariants including SAR ⇔ FILE_REPORT, probability
+agrees with the settled verdict, no invented case-IDs in prose, and
+connected_card_ids ⇒ §3a + R6. Our FinCEN §3a rule encoding reproduces
+the historical SAR decision on 4,665 / 4,665 confirmed-fraud cases."
 
 **End on**: the cases list with all 20 badges visible.

@@ -3,7 +3,8 @@
 **Pre-flight (~2 min before recording)**
 ```bash
 # 1. Wake Savanna (workspace hibernates after inactivity — first hit warms it)
-curl -s https://tg-9452ce59-4619-4f1d-9b54-81e9a43e847a.tg-2635877100.i.tgcloud.io/api/ping
+set -a && source .env && set +a       # load TG_HOST from .env
+curl -s "$TG_HOST/api/ping"
 # 2. Start the UI
 ./run_ui.sh                       # → http://localhost:8000
 # 3. Warm the live ask-first case in the background

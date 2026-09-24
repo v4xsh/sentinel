@@ -8,7 +8,7 @@ Repo: [github.com/v4xsh/sentinel](https://github.com/v4xsh/sentinel)
 
 Every month, a bank's card-fraud team opens twenty investigations that a human still has to run to the ground. Was this transaction fraud. What kind. How far did it spread. Do we file a SAR. My submission to Hacker House Goa × TigerGraph is Sentinel, an agent that reads six months of the Vesta card-transaction graph and produces, for each flagged alert, a verdict, a fraud-pattern label, the actions the bank should take with §2 approval routes, and a FinCEN-shaped SAR narrative when policy calls for one. Everything the LLM writes is grounded in a graph query or a fitted-model coefficient. Every action comes from a deterministic policy engine encoding the bank's own rulebook. The LLM writes prose; the policy engine decides. Two jobs, and only one of them can hallucinate.
 
-![Cases list](docs/img/cases.png)
+![Cases list](img/cases.png)
 
 ## The trap I fell into first
 
@@ -67,7 +67,7 @@ Twelve fraud, eight legitimate, zero uncertain finals. Four SARs: HHG-004, HHG-0
 
 HHG-014 is the flagship. An analyst-flagged case where several cards in the month share an unusual device profile. The T4 device signal (two or more distinct customers with prior confirmed-fraud ClosedCases on the shared device) fires `shared_element = "device"`. §3a fires the SAR. R6 fires `MONITOR_CONNECTED_CARDS`. The initial actions are `STEP_UP_AUTH`, `CREATE_CASE`, `FILE_REPORT` because the §6 two-channel gate cleared 0.85 before the customer was even contacted. When the customer denies (or the simulator denies for them at τ = 0.30), the final adds `BLOCK_CARD`.
 
-![HHG-014 graph neighbourhood](docs/img/hhg014_graph.png)
+![HHG-014 graph neighbourhood](img/hhg014_graph.png)
 
 HHG-003 is the case I like most to explain. Customer reports "I never made this $49 charge." A naïve system would block the card. Sentinel runs the `recurring_match` installed query on the card's history at that ProductCD and amount, sees seven prior hits at cadence CV 0.63, and lands on R7: dispute against a recurring charge. Actions are `CREATE_CASE`, `VERIFY_WITH_CUSTOMER`, `WARN_CUSTOMER`. No BLOCK_CARD. No SAR. Card stays active. That's the case that tells me the response settles the verdict, not the p.
 
@@ -75,7 +75,7 @@ HHG-003 is the case I like most to explain. Customer reports "I never made this 
 
 The alert model's 5-fold CV comes out to AUC 0.9465 ± 0.0046, Brier 0.0927. But CV is in-sample. The strict number is out-of-time: I refit the model on closed cases with `closed_at < 2016-10-01` only, then score every closed case opened on October 1 or later. That's **n = 1,372 cases the model has never seen** (1,228 fraud + 144 cleared). Eval **AUC 0.9374, Brier 0.0829**. Almost identical to the CV estimate. The model isn't overfitting the training window; its behaviour on strictly-later cases matches the in-sample number to within a percentage point. Reproduce with `python scripts/oot_eval.py`.
 
-![Backtest report](docs/img/backtest.png)
+![Backtest report](img/backtest.png)
 
 The 150-case simulated backtest at τ = 0.30 hits 0.833 verdict accuracy. The oracle-mode backtest hits 1.000, but I flag that up-front as a policy-engine correctness check rather than a model claim: `_oracle_response` derives `customer_response` from the historical `actions_taken` label, which then determines the verdict via §6. It's a useful invariant, not a headline number.
 

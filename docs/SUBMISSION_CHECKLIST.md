@@ -13,7 +13,7 @@ its location or an explicit "user adds on submission" line.*
 | 4 | **Cases written to graph** | 35 `SentinelCase` vertices live in FraudGraph (20 benchmark + 15 monitoring) — confirmed by `scripts/acceptance_check.py::check_9` |
 | 5 | **SAR files where required** | 4 filed: HHG-004, HHG-006, HHG-011, HHG-014. `sar.file=True` + `narrative` populated + `FILE_REPORT` in `next_best_actions.final` |
 | 6 | **Next-best-action before / after in every file** | `next_best_actions.initial` and `next_best_actions.final` on all 20 answer files; `what_changed` records the set-diff |
-| 7 | **UI** | FastAPI + d3 SPA. Launch: `./run_ui.sh` → http://localhost:8000. Screenshots: `docs/img/{cases,hhg014_graph,backtest}.png` |
+| 7 | **UI** | FastAPI + d3 SPA. Launch: `./run_ui.sh` → http://localhost:8000. Screenshots: `img/{cases,hhg014_graph,backtest}.png` |
 | 8 | **Backtest report** | `backtest/BACKTEST_REPORT.md` — 150 cases, 75 tune + 75 held-out eval; simulated τ=0.30 verdict acc 0.833; OOT eval AUC 0.9374, Brier 0.0829; reliability plot inline |
 | 9 | **Alert-model metrics** | 5-fold CV AUC 0.9465 ± 0.0046, Brier 0.0927 (`sentinel/evidence/alert_model.json`) |
 | 10 | **FinCEN §3a SAR-encoding replay** | 4,665 / 4,665 confirmed-fraud rows reproduce historical `report_filed` (`tests/test_sar_replay.py`) |
@@ -24,7 +24,7 @@ its location or an explicit "user adds on submission" line.*
 | 15 | **Demo video** | **user adds on submission** — replace `**Demo video:** _link added on submission_` at the top of `README.md`, and the `<!-- VIDEO -->` markers in `docs/BLOG_FINAL.md` and `docs/SOCIAL_FINAL.md` |
 | 16 | **Blog post** | Text ready at `docs/BLOG_FINAL.md` (1,993 words, first-person, matches v4xsh.dev style). **User publishes and swaps `<!-- BLOG -->` markers in social copy for the live URL.** |
 | 17 | **Social post** | Text ready at `docs/SOCIAL_FINAL.md` — X (246 chars) + LinkedIn. **User posts and inserts the video + blog URLs at the marker positions.** |
-| 18 | **Screenshots** | `docs/img/cases.png`, `docs/img/hhg014_graph.png`, `docs/img/backtest.png` (1600×900, captured via `scripts/capture_screenshots.py`) |
+| 18 | **Screenshots** | `img/cases.png`, `img/hhg014_graph.png`, `img/backtest.png` (1600×900, captured via `scripts/capture_screenshots.py`) |
 | 19 | **Reviewer summary** | `docs/SUBMISSION.md` — one-page reviewer's guide |
 | 20 | **Architecture deep-dive** | `docs/ARCHITECTURE.md` |
 | 21 | **Per-case rationale** | `docs/BENCHMARK_RESULTS.md` — regenerated from ledgers, names the 10 ask-first cases at the top |

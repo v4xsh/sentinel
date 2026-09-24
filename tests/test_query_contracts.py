@@ -20,13 +20,17 @@ from sentinel.agent.id_resolver import card_tuple_id, txn_vertex_id
 from sentinel.config import TG_GRAPHNAME
 from sentinel.graph.client import TGClient
 
+from sentinel.config import DUCKDB_PATH
+
 pytestmark = pytest.mark.skipif(
-    not os.getenv("TG_HOST") and not os.path.exists("/etc/tg_host"),
-    reason="TigerGraph workspace not reachable",
+    (not os.getenv("TG_HOST") and not os.path.exists("/etc/tg_host"))
+    or not DUCKDB_PATH.exists(),
+    reason="TigerGraph workspace not reachable or feature store not built",
 )
 
-HHG14_CARD    = card_tuple_id("C13487-K1")     # "C13487|555.0|150.0|mastercard|117.0|debit"
-HHG14_TXN     = txn_vertex_id("3478561")        # "T3478561"
+# Lazy so a fresh clone (no built duckdb) can still collect this module.
+HHG14_CARD    = card_tuple_id("C13487-K1") if DUCKDB_PATH.exists() else "C13487"
+HHG14_TXN     = txn_vertex_id("3478561")
 HHG14_DEVICE  = "SM-G935F Build/NRD90M | Android 7.0 | chrome 62.0 for android | 1920x1080"
 HHG14_REGION  = "315.0"                          # BillingRegion.primary_id
 HHG14_EMAIL   = "gmail.com"

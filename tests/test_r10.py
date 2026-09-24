@@ -13,7 +13,13 @@ from sentinel.agent.r10 import (
     prior_confirmed_fraud_card_tuples,
     prior_confirmed_fraud_on_two_cards,
 )
+from sentinel.config import DUCKDB_PATH
 from sentinel.data.features import connect
+
+pytestmark = pytest.mark.skipif(
+    not DUCKDB_PATH.exists(),
+    reason="feature store not built (fresh clone)",
+)
 
 
 @pytest.fixture(scope="module")

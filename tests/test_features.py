@@ -19,6 +19,13 @@ from sentinel.data.features import (
     resolve_card_by_txn,
 )
 
+# Skip the whole module on a fresh clone (no built feature store, no source
+# parquet). All other offline tests still run.
+pytestmark = pytest.mark.skipif(
+    not PARQUET.joinpath("transactions.parquet").exists(),
+    reason="feature store source parquet not present (fresh clone)",
+)
+
 TX = f"read_parquet('{PARQUET / 'transactions.parquet'}')"
 
 
